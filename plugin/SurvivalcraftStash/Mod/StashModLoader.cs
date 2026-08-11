@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using Engine;
 using GameEntitySystem;
 using Stash.Game;
@@ -16,6 +17,7 @@ public class StashModLoader : ModLoader
         StashPlatform.Register(new ScmodStashPlatform());
 
         // 钩子必须显式注册，否则 override 不会被调用。
+        ModsManager.RegisterHook("OnXdbLoad", this);
         ModsManager.RegisterHook("OnModalPanelWidgetSet", this);
         ModsManager.RegisterHook("UpdateInput", this);
         ModsManager.RegisterHook("OnProjectLoaded", this);
@@ -26,6 +28,9 @@ public class StashModLoader : ModLoader
 
     public override void ClothingWidgetOpen(ComponentGui componentGui, ClothingWidget clothingWidget) =>
         StashClothingButton.Attach(componentGui, clothingWidget);
+
+    /// <summary>把背包组件挂到玩家实体上。走代码而不是 .xdb，原因见 StashDatabaseInjector。</summary>
+    public override void OnXdbLoad(XElement xElement) => StashDatabaseInjector.Inject(xElement);
 
     public override void UpdateInput(ComponentInput componentInput, WidgetInput widgetInput) =>
         StashHotkeys.Update(componentInput, widgetInput);

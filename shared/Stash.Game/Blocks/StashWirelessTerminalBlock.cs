@@ -17,16 +17,18 @@ public class StashWirelessTerminalBlock : CubeBlock
     // 玩家存档里可能还放着，复用索引会让旧方块直接变成无线终端。
     public static int Index = StashChestTiers.BaseIndex + 10;
 
-    private static readonly Color BoundTint = new(140, 210, 160);
-    private static readonly Color UnboundTint = new(150, 150, 150);
+    /// <summary>绑定后亮青色，未绑定暗红——离远也看得出这块有没有配对。</summary>
+    private static readonly Color BoundTint = new(120, 230, 235);
+
+    private static readonly Color UnboundTint = new(190, 90, 90);
 
     /// <summary>
-    /// 用玻璃那格贴图（实测 #C0D0F0），配上绿/灰色调，和用铁锭贴图的升级件区分开——
-    /// 实机反馈"无线终端未绑定和铁制升级件长得一样"。
+    /// 用煤块那格贴图（实测 #101010 的深色），配青色/暗红色调——
+    /// 和铁锭色的升级件、玻璃色的方块都不撞脸（这两版外观都被实机否掉过）。
     /// </summary>
-    public const int GlassTextureSlot = 67;
+    public const int DarkTextureSlot = 62;
 
-    public override int GetFaceTextureSlot(int face, int value) => GlassTextureSlot;
+    public override int GetFaceTextureSlot(int face, int value) => DarkTextureSlot;
 
     public override void GenerateTerrainVertices(
         BlockGeometryGenerator generator,

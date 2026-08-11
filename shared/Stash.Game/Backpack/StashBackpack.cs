@@ -53,6 +53,11 @@ public static class StashBackpack
 
         if (inventory == null)
         {
+            // 组件没挂上（历史存档 / 数据库注入失败）。以前这里直接静默返回，
+            // 表现就是"按 B 什么都不发生"，查起来毫无线索。
+            player.ComponentGui.DisplaySmallMessage(
+                StashText.BackpackComponentMissing, Color.White, blinking: false, playNotificationSound: false);
+            Engine.Log.Warning("[Stash] 玩家实体上没有 ComponentStashBackpack，背包无法打开。");
             return false;
         }
 

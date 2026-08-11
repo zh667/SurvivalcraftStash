@@ -4,11 +4,14 @@ using Game;
 namespace Stash.Game;
 
 /// <summary>
-/// 往刚打开的库存界面里挂按钮条。
+/// 往刚打开的界面里挂「整理」按钮。
 ///
 /// 挂钩点是 <c>ModLoader.OnModalPanelWidgetSet</c>——它在 <c>ComponentGui.ModalPanelWidget</c> 的
 /// setter 里触发，此时新界面**已经构造完毕**（子控件都在）。
 /// 另一个候选 <c>OnWidgetConstruct</c> 是在 XML 加载**之前**触发的，那时还没有子控件，用不了。
+///
+/// **只在两种界面上挂**：玩家自己的物品栏、背包。
+/// 箱子、存储终端、衣物界面一律不挂——那里的排布要么是玩家自己摆的，要么本来就是排好序的。
 /// </summary>
 public static class StashUiInjector
 {
@@ -55,21 +58,39 @@ public static class StashUiInjector
             return;
         }
 
-        PanelContainer? player = containers.Find(c => c.IsPlayerInventory);
-        PanelContainer? container = containers.Find(c => !c.IsPlayerInventory && !c.IsCreative);
-
-        if (!StashButtonBar.IsUseful(player, container))
+        PanelContainer? target = ChooseSortTarget(containers);
+        if (target == null)
         {
             return;
         }
 
-        var bar = new StashButtonBar(gui, player, container);
-        host.Children.Add(bar);
+        host.Children.Add(new StashButtonBar(gui, target));
         s_injected.Add(panel);
+    }
 
-        Log.Information(
-            $"[Stash] 已在 {panel.GetType().Name} 挂上按钮栏（玩家侧 {(player != null ? "有" : "无")}，" +
-            $"另一侧 {(container != null ? container.Inventory.GetType().Name : "无")}）");
+    /// <summary>
+    /// 整理谁：背包界面整理背包，玩家物品栏界面整理物品栏，其它界面一概不挂。
+    /// 创造模式的物品栏是无限物品面板，整理它没有意义。
+    /// </summary>
+    private static PanelContainer? ChooseSortTarget(List<PanelContainer> containers)
+    {
+        foreach (PanelContainer container in containers)
+        {
+            if (container.Inventory is ComponentStashBackpack)
+            {
+                return container;
+            }
+        }
+
+        foreach (PanelContainer container in containers)
+        {
+            if (container.IsPlayerInventory && !container.IsCreative)
+            {
+                return container;
+            }
+        }
+
+        return null;
     }
 
     public static void Reset() => s_injected.Clear();

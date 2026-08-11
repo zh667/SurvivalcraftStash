@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using Engine;
 using Game.NetWork;
 using GameEntitySystem;
@@ -20,6 +21,7 @@ public class StashModLoader : ModLoader
 
         // 钩子必须显式注册，否则 override 根本不会被调用（官方示例模组里写明了这一点）。
         // 之前漏了这一步 → 整理按钮、准星预览、世界数据加载全部没生效。
+        ModsManager.RegisterHook("OnXdbLoad", this);
         ModsManager.RegisterHook("OnModalPanelWidgetSet", this);
         ModsManager.RegisterHook("UpdateInput", this);
         ModsManager.RegisterHook("OnLoadingFinished", this);
@@ -47,6 +49,9 @@ public class StashModLoader : ModLoader
             return false;
         }
     }
+
+    /// <summary>把背包组件挂到玩家实体上。走代码而不是 .xdb，原因见 StashDatabaseInjector。</summary>
+    public override void OnXdbLoad(XElement xElement) => StashDatabaseInjector.Inject(xElement);
 
     public override void UpdateInput(ComponentInput componentInput, WidgetInput widgetInput) =>
         StashHotkeys.Update(componentInput, widgetInput);

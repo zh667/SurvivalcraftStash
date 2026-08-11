@@ -24,6 +24,9 @@
     <MemberSubsystemTemplate Name="StashWirelessBlockBehavior" Guid="21675118-d36b-4471-9599-fa1b853fae6e" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
       <Parameter Name="Class" Guid="59d634a0-661f-4e28-8b99-aec5ec6eecb4" Value="Game.SubsystemStashWirelessBlockBehavior" Type="string"/>
     </MemberSubsystemTemplate>
+    <MemberSubsystemTemplate Name="StashBackpackBlockBehavior" Guid="5ae17c41-58f2-437a-ae7c-139d34f35de8" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
+      <Parameter Name="Class" Guid="a99dc914-dfaa-48d2-b148-74e3f2dc63cc" Value="Game.SubsystemStashBackpackBlockBehavior" Type="string"/>
+    </MemberSubsystemTemplate>
   </ProjectTemplate>
   <EntityTemplate Name="StashChestCopper" Guid="08528624-5610-4128-bcb6-1de546cc1c76">
     <MemberComponentTemplate Name="Chest" Guid="fe5dccf1-762f-429c-ab0e-26f5294d5814" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
@@ -48,12 +51,5 @@
       <Parameter Name="StackMultiplier" Guid="11195508-29a8-4394-9d05-878c15746988" Value="16" Type="int"/>
     </MemberComponentTemplate>
     <MemberComponentTemplate Name="BlockEntity" Guid="567ba85a-4f02-4fa1-9238-bd81c85fbed2" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
-  </EntityTemplate>
-  <!-- 随身背包：挂在玩家实体上，存档与联机同步都由原版负责 -->
-  <EntityTemplate Name="Player" Guid="4be6c1c5-d65d-4537-8a8b-a391969e6dc2">
-    <MemberComponentTemplate Name="StashBackpack" Guid="bac84819-e9de-4309-bd02-867c0a748997" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
-      <Parameter Name="Class" Guid="0392b12c-1ab9-45c5-98c5-802c4f2d5758" Value="Game.ComponentStashBackpack" Type="string"/>
-      <Parameter Name="SlotsCount" Guid="28959f24-d45c-4dd3-af2c-800f8be93f6c" Value="32" Type="int"/>
-    </MemberComponentTemplate>
   </EntityTemplate>
 </Mod>
