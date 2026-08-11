@@ -1,0 +1,11 @@
+<!--
+  共享层不是独立程序集，而是直接编译进两个 Mod 与测试工程。
+  这样避免了 SCTM 那种"两个平台各存一份源码、时间久了逐渐漂移"的问题。
+-->
+<Project>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)**\*.cs"
+             Exclude="$(MSBuildThisFileDirectory)bin\**;$(MSBuildThisFileDirectory)obj\**"
+             LinkBase="Shared" />
+  </ItemGroup>
+</Project>

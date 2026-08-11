@@ -1,0 +1,11 @@
+<!--
+  依赖游戏程序集、但两个平台完全一致的代码（两版 Block/BlocksManager 的相关签名已核对为同签名）。
+  只编译进两个 Mod 工程，不进测试工程。
+-->
+<Project>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)**\*.cs"
+             Exclude="$(MSBuildThisFileDirectory)bin\**;$(MSBuildThisFileDirectory)obj\**"
+             LinkBase="SharedGame" />
+  </ItemGroup>
+</Project>

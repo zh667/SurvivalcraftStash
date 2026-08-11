@@ -1,0 +1,13 @@
+{
+  "$schema": "https://gitee.com/SC-SPM/SurvivalcraftApi/raw/SCAPI1.9/Survivalcraft/Content/modinfo-scheme.json",
+  "Name": "Stash",
+  "Version": "0.1.0",
+  "ApiVersion": "1.9.2.1",
+  "Description": "收纳与物流套件：背包、分级箱子、一键整理、存储网络。",
+  "ScVersion": "2.4.0.0",
+  "GameplayImpactLevel": "Normal",
+  "Link": "https://github.com/zh667/SurvivalcraftStash",
+  "Author": "zh667",
+  "PackageName": "SurvivalcraftStash",
+  "Dependencies": {}
+}

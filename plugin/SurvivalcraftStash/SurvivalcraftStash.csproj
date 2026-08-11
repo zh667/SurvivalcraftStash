@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SurvivalcraftStash</AssemblyName>
+    <RootNamespace>Game</RootNamespace>
+    <OutputType>Library</OutputType>
+    <Version>0.1.0</Version>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- 插件版目标平台 -->
+    <DefineConstants>$(DefineConstants);STASH_SCMOD</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\..\shared\Stash.Shared\Stash.Shared.props" />
+  <Import Project="..\..\shared\Stash.Game\Stash.Game.props" />
+
+  <ItemGroup>
+    <PackageReference Include="SurvivalcraftAPI.Survivalcraft" Version="1.9.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="modinfo.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PackScmod" AfterTargets="PostBuildEvent">
+    <PropertyGroup>
+      <PathOfScmod>$(TargetDir)..\$(AssemblyName).scmod</PathOfScmod>
+    </PropertyGroup>
+    <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PathOfScmod)" Overwrite="true" />
+    <Message Text="已打包 scmod: $(PathOfScmod)" Importance="high" />
+  </Target>
+</Project>

@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+
+    <!-- 联机版需要游戏程序集；按优先级探测，也可以在命令行传 -p:SurvivalcraftDir=... -->
+    <SurvivalcraftDir Condition="'$(SurvivalcraftDir)' == '' and Exists('$(MSBuildThisFileDirectory)..\sc-libs\Survivalcraft.dll')">$(MSBuildThisFileDirectory)..\sc-libs\</SurvivalcraftDir>
+    <SurvivalcraftDir Condition="'$(SurvivalcraftDir)' == '' and Exists('$(USERPROFILE)\sc-libs\Survivalcraft.dll')">$(USERPROFILE)\sc-libs\</SurvivalcraftDir>
+    <SurvivalcraftDir Condition="'$(SurvivalcraftDir)' == '' and Exists('$(HOME)/sc-libs/Survivalcraft.dll')">$(HOME)/sc-libs/</SurvivalcraftDir>
+  </PropertyGroup>
+</Project>

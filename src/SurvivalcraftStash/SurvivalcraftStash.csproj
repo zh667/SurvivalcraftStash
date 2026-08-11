@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SurvivalcraftStash</AssemblyName>
+    <RootNamespace>Game</RootNamespace>
+    <OutputType>Library</OutputType>
+    <Version>0.1.0</Version>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- 联机版目标平台 -->
+    <DefineConstants>$(DefineConstants);STASH_NETMOD</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\..\shared\Stash.Shared\Stash.Shared.props" />
+  <Import Project="..\..\shared\Stash.Game\Stash.Game.props" />
+
+  <ItemGroup>
+    <Reference Include="Survivalcraft">
+      <HintPath>$(SurvivalcraftDir)Survivalcraft.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Engine">
+      <HintPath>$(SurvivalcraftDir)Engine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="EntitySystem">
+      <HintPath>$(SurvivalcraftDir)EntitySystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(SurvivalcraftDir)Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="LiteNetLib">
+      <HintPath>$(SurvivalcraftDir)LiteNetLib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="modinfo.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
