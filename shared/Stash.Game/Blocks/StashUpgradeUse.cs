@@ -32,6 +32,12 @@ public static class StashUpgradeUse
             return false;
         }
 
+        // 同 OnInteract：非权威端只消费掉这次使用，真正的升级由服务端执行。
+        if (StashPlatform.IsReady && !StashPlatform.Current.IsAuthoritative)
+        {
+            return true;
+        }
+
         int upgradeData = Terrain.ExtractData(heldValue);
         int x = raycastResult.CellFace.X;
         int y = raycastResult.CellFace.Y;

@@ -34,6 +34,13 @@ public class SubsystemStashDrawerBlockBehavior : SubsystemBlockBehavior
             return false;
         }
 
+        // 联机版里客户端也会走一遍 OnInteract（原版靠 WorkType 判断来分流）。
+        // 这里直接消费掉：客户端发出去的交互事件会让服务端再执行一次，两边都做就会双份扣减。
+        if (StashPlatform.IsReady && !StashPlatform.Current.IsAuthoritative)
+        {
+            return true;
+        }
+
         ComponentBlockEntity blockEntity = m_blockEntities.GetBlockEntity(
             raycastResult.CellFace.X, raycastResult.CellFace.Y, raycastResult.CellFace.Z);
         var drawer = blockEntity?.Entity.FindComponent<ComponentStashDrawer>(throwOnError: false);
