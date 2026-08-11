@@ -67,6 +67,19 @@ public static class StashText
     public static string UpgradeFailed =>
         UseEnglish ? "Upgrade failed" : "升级失败";
 
+    public static string BackpackName(StashBackpackTier tier) => tier.Key switch
+    {
+        "cloth" => UseEnglish ? "Cloth Backpack" : "布背包",
+        "leather" => UseEnglish ? "Leather Backpack" : "皮革背包",
+        "iron" => UseEnglish ? "Ironbound Backpack" : "铁扣背包",
+        _ => UseEnglish ? "Backpack" : "背包",
+    };
+
+    public static string BackpackNotWorn =>
+        UseEnglish ? "You are not wearing a backpack" : "你没有背着背包";
+
+    public static string OpenBackpack => UseEnglish ? "Backpack" : "背包";
+
     public static string DrawerName(StashDrawerTier tier) => tier.Key switch
     {
         "wood" => UseEnglish ? "Wooden Drawer" : "木抽屉",

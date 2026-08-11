@@ -17,6 +17,9 @@ public class StashModLoader : ModLoader
         Log.Information($"[Stash] scmod {Version} 已加载");
     }
 
+    public override void ClothingWidgetOpen(ComponentGui componentGui, ClothingWidget clothingWidget) =>
+        StashClothingButton.Attach(componentGui, clothingWidget);
+
     public override void GuiUpdate(ComponentGui componentGui) => StashAimPreview.Update(componentGui);
 
     public override void OnModalPanelWidgetSet(ComponentGui componentGui, Widget oldWidget, Widget newWidget) =>

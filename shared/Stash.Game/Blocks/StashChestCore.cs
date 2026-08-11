@@ -193,7 +193,14 @@ public static class StashChestCore
             return false;
         }
 
-        player.ComponentGui.ModalPanelWidget = new StashChestWidget(player.ComponentMiner.Inventory, chestInventory, tier);
+        player.ComponentGui.ModalPanelWidget = new StashContainerWidget(
+            StashText.ChestName(tier),
+            chestInventory,
+            firstSlot: 0,
+            slots: tier.SlotsCount,
+            columns: tier.Columns,
+            slotSize: tier.SlotSize,
+            player.ComponentMiner.Inventory);
         AudioManager.PlaySound("Audio/UI/ButtonClick", 1f, 0f, 0f);
         return true;
     }

@@ -82,4 +82,11 @@
     </MemberComponentTemplate>
     <MemberComponentTemplate Name="BlockEntity" Guid="4b17fcb5-0088-447b-b621-b5da24d98506" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
   </EntityTemplate>
+  <!-- 随身背包：挂在玩家实体上，存档与联机同步都由原版负责 -->
+  <EntityTemplate Name="Player" Guid="4be6c1c5-d65d-4537-8a8b-a391969e6dc2">
+    <MemberComponentTemplate Name="StashBackpack" Guid="bac84819-e9de-4309-bd02-867c0a748997" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
+      <Parameter Name="Class" Guid="0392b12c-1ab9-45c5-98c5-802c4f2d5758" Value="Game.ComponentStashBackpack" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="28959f24-d45c-4dd3-af2c-800f8be93f6c" Value="32" Type="int"/>
+    </MemberComponentTemplate>
+  </EntityTemplate>
 </Mod>
