@@ -43,30 +43,6 @@ public class SubsystemStashUpgradeBlockBehavior : SubsystemBlockBehavior
             return false;
         }
 
-        int upgradeData = Terrain.ExtractData(held);
-
-        // 背包升级件作用在身上穿的背包，**不需要指着任何方块**——对着天也能用。
-        // 之前先做 raycast 再判断，对空使用直接就 return false 了，玩家会觉得"升级件没反应"。
-        if (StashBackpackUpgrade.IsBackpackUpgrade(upgradeData))
-        {
-            if (StashPlatform.IsReady && !StashPlatform.Current.IsAuthoritative)
-            {
-                return true;
-            }
-
-            if (!StashBackpackUpgrade.TryUpgradeWorn(componentMiner.ComponentPlayer, upgradeData, out bool upgraded))
-            {
-                return false;
-            }
-
-            if (upgraded)
-            {
-                inventory.RemoveSlotItems(activeSlot, 1);
-                AudioManager.PlaySound("Audio/UI/ButtonClick", 1f, 0f, 0f);
-            }
-
-            return true;
-        }
 
         if (componentMiner.Raycast(ray, RaycastMode.Interaction) is not TerrainRaycastResult raycastResult)
         {

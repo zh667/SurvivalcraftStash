@@ -20,7 +20,13 @@ public class StashWirelessTerminalBlock : CubeBlock
     private static readonly Color BoundTint = new(140, 210, 160);
     private static readonly Color UnboundTint = new(150, 150, 150);
 
-    public override int GetFaceTextureSlot(int face, int value) => StashChestUpgradeBlock.IngotTextureSlot;
+    /// <summary>
+    /// 用玻璃那格贴图（实测 #C0D0F0），配上绿/灰色调，和用铁锭贴图的升级件区分开——
+    /// 实机反馈"无线终端未绑定和铁制升级件长得一样"。
+    /// </summary>
+    public const int GlassTextureSlot = 67;
+
+    public override int GetFaceTextureSlot(int face, int value) => GlassTextureSlot;
 
     public override void GenerateTerrainVertices(
         BlockGeometryGenerator generator,

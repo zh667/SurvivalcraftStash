@@ -40,10 +40,13 @@ public sealed class StashButtonBar : StackPanelWidget
 
         Direction = LayoutDirection.Horizontal;
         HorizontalAlignment = WidgetAlignment.Center;
-        VerticalAlignment = WidgetAlignment.Near;
-        Margin = new Vector2(0f, 4f);
+        // 贴面板底边。放顶部会压住"箱子/背包"两个标题，放面板外（负坐标）又可能被裁掉，
+        // 底边这一条在原版几个面板里都是空的。
+        VerticalAlignment = WidgetAlignment.Far;
+        Margin = new Vector2(0f, 6f);
 
-        if (player != null)
+        // 创造模式的物品栏是无限物品面板，整理它没有意义。
+        if (player is { IsCreative: false })
         {
             m_sortButton = AddButton(StashText.Sort);
         }

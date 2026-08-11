@@ -200,7 +200,8 @@ public static class StashChestCore
             slots: tier.SlotsCount,
             columns: tier.Columns,
             slotSize: tier.SlotSize,
-            player.ComponentMiner.Inventory);
+            player.ComponentMiner.Inventory,
+            player);
         AudioManager.PlaySound("Audio/UI/ButtonClick", 1f, 0f, 0f);
         return true;
     }

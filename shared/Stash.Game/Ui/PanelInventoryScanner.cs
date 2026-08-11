@@ -12,14 +12,26 @@ public sealed class PanelContainer
         Widgets = widgets;
     }
 
+    /// <summary>是不是当前玩家自己那份库存（按对象比较，不看类型）。</summary>
+    public bool IsViewerInventory { get; set; }
+
+    /// <summary>创造模式的物品栏：里面是无限物品面板，整理它没有意义。</summary>
+    public bool IsCreative => Inventory is ComponentCreativeInventory;
+
     public IInventory Inventory { get; }
 
     public List<int> SlotIndexes { get; }
 
     public List<InventorySlotWidget> Widgets { get; }
 
-    /// <summary>是不是玩家自己的那份库存（快捷栏 + 背包）。</summary>
-    public bool IsPlayerInventory => Inventory is ComponentInventory;
+    /// <summary>
+    /// 是不是玩家自己的那份库存。
+    ///
+    /// **不能按类型判断**：创造模式下玩家的库存是 <see cref="ComponentCreativeInventory"/>，
+    /// 它直接继承 Component 而不是 ComponentInventory。早先写成 `is ComponentInventory`，
+    /// 结果创造模式下整排按钮一个都不显示（实机反馈"玩家物品栏依旧没有整理功能"）。
+    /// </summary>
+    public bool IsPlayerInventory => IsViewerInventory;
 }
 
 /// <summary>
@@ -30,7 +42,7 @@ public sealed class PanelContainer
 /// </summary>
 public static class PanelInventoryScanner
 {
-    public static List<PanelContainer> Scan(Widget root)
+    public static List<PanelContainer> Scan(Widget root, IInventory? viewerInventory = null)
     {
         var byInventory = new Dictionary<IInventory, PanelContainer>();
         var order = new List<PanelContainer>();
@@ -60,6 +72,7 @@ public static class PanelInventoryScanner
         foreach (PanelContainer container in order)
         {
             SortBySlotIndex(container);
+            container.IsViewerInventory = viewerInventory != null && ReferenceEquals(container.Inventory, viewerInventory);
         }
 
         return order;

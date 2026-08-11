@@ -21,6 +21,7 @@ public class StashModLoader : ModLoader
         // 钩子必须显式注册，否则 override 根本不会被调用（官方示例模组里写明了这一点）。
         // 之前漏了这一步 → 整理按钮、准星预览、世界数据加载全部没生效。
         ModsManager.RegisterHook("OnModalPanelWidgetSet", this);
+        ModsManager.RegisterHook("UpdateInput", this);
         ModsManager.RegisterHook("OnLoadingFinished", this);
 
         // 一个一个注册：之前三个写在同一个 try 里，第一个撞号后面两个就再也没注册上。
@@ -46,6 +47,9 @@ public class StashModLoader : ModLoader
             return false;
         }
     }
+
+    public override void UpdateInput(ComponentInput componentInput, WidgetInput widgetInput) =>
+        StashHotkeys.Update(componentInput, widgetInput);
 
     public override void OnModalPanelWidgetSet(ComponentGui gui, Widget oldWidget, Widget newWidget) =>
         StashUiInjector.OnModalPanelChanged(gui, oldWidget, newWidget);

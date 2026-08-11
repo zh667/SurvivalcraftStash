@@ -65,7 +65,7 @@ public static class StashBackpack
             slots: tier.SlotsCount,
             columns: tier.Columns,
             slotSize: 60f,
-            player.ComponentMiner.Inventory);
+            player.ComponentMiner.Inventory);   // 背包界面右侧就是物品栏，不再套一层切换
         AudioManager.PlaySound("Audio/UI/ButtonClick", 1f, 0f, 0f);
         return true;
     }

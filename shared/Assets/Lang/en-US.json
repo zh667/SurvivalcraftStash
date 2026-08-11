@@ -36,29 +36,19 @@
       "CRDescription:0": "Storage Terminal"
     },
     "ClothingBlock:38": {
-      "DisplayName": "Cloth Backpack",
-      "Description": "A worn backpack with 16 slots. Drag it onto your body to wear it.",
-      "CRDescription:0": "Cloth Backpack"
+      "DisplayName": "Copper Backpack",
+      "Description": "A worn backpack with 16 slots. Press B or use the Backpack button in your inventory.",
+      "CRDescription:0": "Copper Backpack"
     },
     "ClothingBlock:39": {
-      "DisplayName": "Leather Backpack",
+      "DisplayName": "Iron Backpack",
       "Description": "A worn backpack with 24 slots.",
-      "CRDescription:0": "Leather Backpack"
+      "CRDescription:0": "Iron Backpack"
     },
     "ClothingBlock:40": {
-      "DisplayName": "Ironbound Backpack",
+      "DisplayName": "Diamond Backpack",
       "Description": "A worn backpack with 32 slots.",
-      "CRDescription:0": "Ironbound Backpack"
-    },
-    "StashChestUpgradeBlock:4": {
-      "DisplayName": "Leather Backpack Upgrade",
-      "Description": "Use while wearing a cloth backpack to upgrade it in place.",
-      "CRDescription:0": "Leather Backpack Upgrade"
-    },
-    "StashChestUpgradeBlock:5": {
-      "DisplayName": "Ironbound Backpack Upgrade",
-      "Description": "Use while wearing a leather backpack.",
-      "CRDescription:0": "Ironbound Backpack Upgrade"
+      "CRDescription:0": "Diamond Backpack"
     },
     "StashWirelessTerminalBlock:0": {
       "DisplayName": "Wireless Terminal",

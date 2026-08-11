@@ -22,6 +22,9 @@ public static class StashUiInjector
             s_injected.Remove(oldWidget);
         }
 
+        // 界面一关就把"正在打字"复位，否则搜索框带着焦点被销毁，按键会一直被吃掉。
+        StashHotkeys.TypingInProgress = false;
+
         if (newWidget == null || s_injected.Contains(newWidget) || !StashPlatform.IsReady)
         {
             return;
@@ -45,20 +48,15 @@ public static class StashUiInjector
             return;
         }
 
-        List<PanelContainer> containers = PanelInventoryScanner.Scan(panel);
+        IInventory? viewerInventory = gui?.m_componentPlayer?.ComponentMiner?.Inventory;
+        List<PanelContainer> containers = PanelInventoryScanner.Scan(panel, viewerInventory);
         if (containers.Count == 0)
         {
             return;
         }
 
         PanelContainer? player = containers.Find(c => c.IsPlayerInventory);
-        PanelContainer? container = containers.Find(c => !c.IsPlayerInventory);
-
-        // 创造物品栏之类的"无限库存"整理没有意义，直接跳过。
-        if (container?.Inventory is ComponentCreativeInventory)
-        {
-            container = null;
-        }
+        PanelContainer? container = containers.Find(c => !c.IsPlayerInventory && !c.IsCreative);
 
         if (!StashButtonBar.IsUseful(player, container))
         {
@@ -67,15 +65,11 @@ public static class StashUiInjector
 
         var bar = new StashButtonBar(gui, player, container);
         host.Children.Add(bar);
-
-        // 放在面板**正上方**（y 取负数）。原先贴在面板内顶部会压住"箱子/背包"两个标题，
-        // 实机反馈是"没看到整理按钮在哪"。CanvasWidget 默认不裁剪子控件，负坐标能正常显示。
-        if (host is CanvasWidget canvas)
-        {
-            canvas.SetWidgetPosition(bar, new Vector2(4f, -40f));
-        }
-
         s_injected.Add(panel);
+
+        Log.Information(
+            $"[Stash] 已在 {panel.GetType().Name} 挂上按钮栏（玩家侧 {(player != null ? "有" : "无")}，" +
+            $"另一侧 {(container != null ? container.Inventory.GetType().Name : "无")}）");
     }
 
     public static void Reset() => s_injected.Clear();

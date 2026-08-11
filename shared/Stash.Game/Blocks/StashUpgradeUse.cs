@@ -41,23 +41,6 @@ public static class StashUpgradeUse
 
         int upgradeData = Terrain.ExtractData(heldValue);
 
-        // 背包升级件作用在身上穿的背包上，不看指的是什么方块。
-        if (StashBackpackUpgrade.IsBackpackUpgrade(upgradeData))
-        {
-            if (StashBackpackUpgrade.TryUpgradeWorn(miner.ComponentPlayer, upgradeData, out bool backpackUpgraded))
-            {
-                if (backpackUpgraded)
-                {
-                    inventory.RemoveSlotItems(activeSlot, 1);
-                    AudioManager.PlaySound("Audio/UI/ButtonClick", 1f, 0f, 0f);
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
         int x = raycastResult.CellFace.X;
         int y = raycastResult.CellFace.Y;
         int z = raycastResult.CellFace.Z;

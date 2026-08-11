@@ -49,20 +49,20 @@
 
 
   <!-- 背包（穿在躯干最外层）。结果写成 ClothingBlock:<data>，data 低 8 位就是衣物索引 -->
-  <Recipe Result="ClothingBlock:38" ResultCount="1" RequiredHeatLevel="0" a="cotton" b="string" Description="[0]">
+  <!-- 背包三档，和箱子一样按铜/铁/钻石分级；升级直接用配方（背包穿在身上，没法拿升级件去点） -->
+  <Recipe Result="ClothingBlock:38" ResultCount="1" RequiredHeatLevel="0" a="leather" b="copperingot" Description="[0]">
     "a a"
-    "aaa"
-    "aba"
-  </Recipe>
-
-  <!-- 背包升级件：和箱子一个用法，拿着对身上的背包用一下就升一档，里面的东西不动 -->
-  <Recipe Result="StashChestUpgradeBlock:4" ResultCount="1" RequiredHeatLevel="0" a="leather" b="string" Description="[0]">
-    "aaa"
     "aba"
     "aaa"
   </Recipe>
 
-  <Recipe Result="StashChestUpgradeBlock:5" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="leather" Description="[0]">
+  <Recipe Result="ClothingBlock:39" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="clothing:38" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
+  <Recipe Result="ClothingBlock:40" ResultCount="1" RequiredHeatLevel="0" a="diamond" b="clothing:39" Description="[0]">
     "aaa"
     "aba"
     "aaa"

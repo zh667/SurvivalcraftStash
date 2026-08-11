@@ -36,29 +36,19 @@
       "CRDescription:0": "存储终端"
     },
     "ClothingBlock:38": {
-      "DisplayName": "布背包",
-      "Description": "穿在身上的背包，16 格。拖到人物身上就背上，拖出来就取下。",
-      "CRDescription:0": "布背包"
+      "DisplayName": "铜背包",
+      "Description": "穿在身上的背包，16 格。拖到人物身上就背上，拖出来就取下。按 B 键或在物品栏界面点「背包」打开。",
+      "CRDescription:0": "铜背包"
     },
     "ClothingBlock:39": {
-      "DisplayName": "皮革背包",
-      "Description": "穿在身上的背包，24 格。",
-      "CRDescription:0": "皮革背包"
+      "DisplayName": "铁背包",
+      "Description": "穿在身上的背包，24 格。用铜背包加一圈铁锭合成。",
+      "CRDescription:0": "铁背包"
     },
     "ClothingBlock:40": {
-      "DisplayName": "铁扣背包",
-      "Description": "穿在身上的背包，32 格。",
-      "CRDescription:0": "铁扣背包"
-    },
-    "StashChestUpgradeBlock:4": {
-      "DisplayName": "皮革背包升级件",
-      "Description": "拿着它对身上穿的布背包使用，升级成皮革背包，里面的东西不动。",
-      "CRDescription:0": "皮革背包升级件"
-    },
-    "StashChestUpgradeBlock:5": {
-      "DisplayName": "铁扣背包升级件",
-      "Description": "拿着它对身上穿的皮革背包使用。",
-      "CRDescription:0": "铁扣背包升级件"
+      "DisplayName": "钻石背包",
+      "Description": "穿在身上的背包，32 格。用铁背包加一圈钻石合成。",
+      "CRDescription:0": "钻石背包"
     },
     "StashWirelessTerminalBlock:0": {
       "DisplayName": "无线终端",

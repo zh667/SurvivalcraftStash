@@ -52,13 +52,9 @@ public static class StashText
         0 => UseEnglish ? "Copper Chest Upgrade" : "铜箱升级件",
         1 => UseEnglish ? "Iron Chest Upgrade" : "铁箱升级件",
         2 => UseEnglish ? "Diamond Chest Upgrade" : "钻石箱升级件",
-        4 => UseEnglish ? "Leather Backpack Upgrade" : "皮革背包升级件",
-        5 => UseEnglish ? "Ironbound Backpack Upgrade" : "铁扣背包升级件",
         _ => UseEnglish ? "Upgrade Kit" : "升级件",
     };
 
-    public static string BackpackUpgraded(StashBackpackTier tier) =>
-        UseEnglish ? $"Upgraded to {BackpackName(tier)}" : $"背包升级为{BackpackName(tier)}";
 
     public static string UpgradeWrongTier =>
         UseEnglish ? "This upgrade does not fit that chest" : "这个升级件配不上这个箱子";
@@ -71,9 +67,9 @@ public static class StashText
 
     public static string BackpackName(StashBackpackTier tier) => tier.Key switch
     {
-        "cloth" => UseEnglish ? "Cloth Backpack" : "布背包",
-        "leather" => UseEnglish ? "Leather Backpack" : "皮革背包",
-        "iron" => UseEnglish ? "Ironbound Backpack" : "铁扣背包",
+        "copper" => UseEnglish ? "Copper Backpack" : "铜背包",
+        "iron" => UseEnglish ? "Iron Backpack" : "铁背包",
+        "diamond" => UseEnglish ? "Diamond Backpack" : "钻石背包",
         _ => UseEnglish ? "Backpack" : "背包",
     };
 
