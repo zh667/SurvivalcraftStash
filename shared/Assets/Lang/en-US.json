@@ -1,0 +1,44 @@
+{
+  "Blocks": {
+    "StashCopperChestBlock:0": {
+      "DisplayName": "Copper Chest",
+      "Description": "A chest with 32 slots.",
+      "CRDescription:0": "Copper Chest"
+    },
+    "StashIronChestBlock:0": {
+      "DisplayName": "Iron Chest",
+      "Description": "A chest with 48 slots.",
+      "CRDescription:0": "Iron Chest"
+    },
+    "StashDiamondChestBlock:0": {
+      "DisplayName": "Diamond Chest",
+      "Description": "A chest with 80 slots.",
+      "CRDescription:0": "Diamond Chest"
+    },
+    "StashViewChestBlock:0": {
+      "DisplayName": "Observation Chest",
+      "Description": "80 slots behind a glass panel.",
+      "CRDescription:0": "Observation Chest"
+    },
+    "StashChestUpgradeBlock:0": {
+      "DisplayName": "Copper Chest Upgrade",
+      "Description": "Use on a wooden chest to upgrade it in place, keeping its contents.",
+      "CRDescription:0": "Copper Chest Upgrade"
+    },
+    "StashChestUpgradeBlock:1": {
+      "DisplayName": "Iron Chest Upgrade",
+      "Description": "Use on a copper chest.",
+      "CRDescription:0": "Iron Chest Upgrade"
+    },
+    "StashChestUpgradeBlock:2": {
+      "DisplayName": "Diamond Chest Upgrade",
+      "Description": "Use on an iron chest.",
+      "CRDescription:0": "Diamond Chest Upgrade"
+    },
+    "StashChestUpgradeBlock:3": {
+      "DisplayName": "Observation Chest Upgrade",
+      "Description": "Use on a diamond chest.",
+      "CRDescription:0": "Observation Chest Upgrade"
+    }
+  }
+}

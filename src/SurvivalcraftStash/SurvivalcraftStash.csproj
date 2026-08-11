@@ -43,4 +43,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <!-- 两个平台共用同一份资源；netmod/scmod 包里都要有 Assets/ 目录 -->
+    <None Include="..\..\shared\Assets\**\*">
+      <Link>Assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Target Name="PackNetmod" AfterTargets="PostBuildEvent">
+    <PropertyGroup>
+      <PathOfNetmod>$(TargetDir)..\$(AssemblyName).netmod</PathOfNetmod>
+    </PropertyGroup>
+    <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PathOfNetmod)" Overwrite="true" />
+    <Message Text="已打包 netmod: $(PathOfNetmod)" Importance="high" />
+  </Target>
 </Project>

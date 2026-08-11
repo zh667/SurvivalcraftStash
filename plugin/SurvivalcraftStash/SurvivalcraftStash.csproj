@@ -33,4 +33,11 @@
     <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PathOfScmod)" Overwrite="true" />
     <Message Text="已打包 scmod: $(PathOfScmod)" Importance="high" />
   </Target>
+  <ItemGroup>
+    <!-- 两个平台共用同一份资源；netmod/scmod 包里都要有 Assets/ 目录 -->
+    <None Include="..\..\shared\Assets\**\*">
+      <Link>Assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

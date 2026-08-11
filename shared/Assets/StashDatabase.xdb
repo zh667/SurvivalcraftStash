@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  注册两个方块行为子系统和四个箱子实体模板。
+  GUID 规则（见官方示例模组 TemplateDatabase.xdb）：
+  - 指向已有元素的 Guid/InheritanceParent 必须照抄原版 Database.xml 里的值
+  - 我们自己新增的元素用新生成的随机 GUID
+  这里用到的原版 GUID：
+    Project 模板          85023bf8-1c90-4dd1-9442-e6c13691d078
+    BlockBehavior 子系统基 fefb9590-4972-4893-b02a-76063611b745
+    Chest 组件模板         7312ec8c-10c7-4133-85b4-4a35bd44c956
+    BlockEntity 组件模板   09a85cba-d94e-41b8-9497-f20ed942c17e
+-->
+<Mod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ProjectTemplate Name="Project" Guid="85023bf8-1c90-4dd1-9442-e6c13691d078">
+    <MemberSubsystemTemplate Name="StashChestBlockBehavior" Guid="572ebcff-fd24-40f0-b2f6-00ca968b46ee" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
+      <Parameter Name="Class" Guid="1dacd6de-7694-4dbe-9523-35ef75c0ca53" Value="Game.SubsystemStashChestBlockBehavior" Type="string"/>
+    </MemberSubsystemTemplate>
+    <MemberSubsystemTemplate Name="StashUpgradeBlockBehavior" Guid="3779bd7a-7e00-4ddb-8b64-c6ad866777a9" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
+      <Parameter Name="Class" Guid="3e187bf2-bfb3-4747-a075-75b42bf0e6e5" Value="Game.SubsystemStashUpgradeBlockBehavior" Type="string"/>
+    </MemberSubsystemTemplate>
+  </ProjectTemplate>
+  <EntityTemplate Name="StashChestCopper" Guid="08528624-5610-4128-bcb6-1de546cc1c76">
+    <MemberComponentTemplate Name="Chest" Guid="fe5dccf1-762f-429c-ab0e-26f5294d5814" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
+      <Parameter Name="Class" Guid="b9b40dbd-e942-4a1e-9771-67aa959deccc" Value="Game.ComponentStashChest" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="7cc43c45-4832-43cf-bc0d-c353bae40632" Value="32" Type="int"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="0acf33de-11f9-4897-8291-9c09c536b859" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+  <EntityTemplate Name="StashChestIron" Guid="7900468c-9135-4762-9794-a940c6b8f35d">
+    <MemberComponentTemplate Name="Chest" Guid="da7a50cb-1a6d-4068-8701-16b59b191d2a" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
+      <Parameter Name="Class" Guid="96560c58-0041-43f1-a414-7e8b16f0f574" Value="Game.ComponentStashChest" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="e609f294-4784-41f9-9c0b-47d9fb354e8c" Value="48" Type="int"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="00078e9b-ec48-44fc-86df-26040678abb9" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+  <EntityTemplate Name="StashChestDiamond" Guid="2c8ee844-2f53-4dfb-a5f5-10ecfef0bc39">
+    <MemberComponentTemplate Name="Chest" Guid="85df311b-1d95-4434-98f1-e7287c9b7056" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
+      <Parameter Name="Class" Guid="a9acd467-f152-4d83-81b2-f2208868aacd" Value="Game.ComponentStashChest" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="6dcc8bfe-e2c5-49ee-9311-c37b8ca86de8" Value="80" Type="int"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="567ba85a-4f02-4fa1-9238-bd81c85fbed2" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+  <EntityTemplate Name="StashChestView" Guid="efae538f-cf4b-45e0-807c-14061a4c7b93">
+    <MemberComponentTemplate Name="Chest" Guid="ea70774e-068c-4d47-892b-bc53fca496a9" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
+      <Parameter Name="Class" Guid="6e890da9-ad5e-417a-a50a-8564fd8aea7d" Value="Game.ComponentStashChest" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="89306935-abb4-4c99-b86f-add93804d1f0" Value="80" Type="int"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="b69fdd4e-03fe-4cf3-a806-772b4e7b5c35" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+</Mod>

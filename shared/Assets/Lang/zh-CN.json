@@ -1,0 +1,44 @@
+{
+  "Blocks": {
+    "StashCopperChestBlock:0": {
+      "DisplayName": "铜箱",
+      "Description": "32 格的箱子。用铜锭围住木箱合成，或拿铜箱升级件对着木箱使用。",
+      "CRDescription:0": "铜箱"
+    },
+    "StashIronChestBlock:0": {
+      "DisplayName": "铁箱",
+      "Description": "48 格的箱子。",
+      "CRDescription:0": "铁箱"
+    },
+    "StashDiamondChestBlock:0": {
+      "DisplayName": "钻石箱",
+      "Description": "80 格的箱子。",
+      "CRDescription:0": "钻石箱"
+    },
+    "StashViewChestBlock:0": {
+      "DisplayName": "观景箱",
+      "Description": "80 格，面板换成玻璃。",
+      "CRDescription:0": "观景箱"
+    },
+    "StashChestUpgradeBlock:0": {
+      "DisplayName": "铜箱升级件",
+      "Description": "拿着它对木箱使用，就地升级成铜箱，里面的东西不会掉出来。",
+      "CRDescription:0": "铜箱升级件"
+    },
+    "StashChestUpgradeBlock:1": {
+      "DisplayName": "铁箱升级件",
+      "Description": "拿着它对铜箱使用。",
+      "CRDescription:0": "铁箱升级件"
+    },
+    "StashChestUpgradeBlock:2": {
+      "DisplayName": "钻石箱升级件",
+      "Description": "拿着它对铁箱使用。",
+      "CRDescription:0": "钻石箱升级件"
+    },
+    "StashChestUpgradeBlock:3": {
+      "DisplayName": "观景箱升级件",
+      "Description": "拿着它对钻石箱使用。",
+      "CRDescription:0": "观景箱升级件"
+    }
+  }
+}
