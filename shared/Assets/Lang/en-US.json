@@ -60,25 +60,25 @@
       "Description": "Holds one item type, 4096 stacks.",
       "CRDescription:0": "Diamond Drawer"
     },
-    "ClothingBlock:100": {
-      "DisplayName": "Cloth Backpack",
-      "Description": "A worn backpack with 16 slots. Drag it onto your body to wear it.",
-      "CRDescription:0": "Cloth Backpack"
-    },
-    "ClothingBlock:101": {
-      "DisplayName": "Leather Backpack",
-      "Description": "A worn backpack with 24 slots.",
-      "CRDescription:0": "Leather Backpack"
-    },
-    "ClothingBlock:102": {
-      "DisplayName": "Ironbound Backpack",
-      "Description": "A worn backpack with 32 slots.",
-      "CRDescription:0": "Ironbound Backpack"
-    },
     "StashHubBlock:0": {
       "DisplayName": "Storage Terminal",
       "Description": "Chests and drawers touching it form one network; tap to search, take and deposit across all of them. Up to 128 containers.",
       "CRDescription:0": "Storage Terminal"
+    },
+    "ClothingBlock:38": {
+      "DisplayName": "Cloth Backpack",
+      "Description": "A worn backpack with 16 slots. Drag it onto your body to wear it.",
+      "CRDescription:0": "Cloth Backpack"
+    },
+    "ClothingBlock:39": {
+      "DisplayName": "Leather Backpack",
+      "Description": "A worn backpack with 24 slots.",
+      "CRDescription:0": "Leather Backpack"
+    },
+    "ClothingBlock:40": {
+      "DisplayName": "Ironbound Backpack",
+      "Description": "A worn backpack with 32 slots.",
+      "CRDescription:0": "Ironbound Backpack"
     }
   }
 }

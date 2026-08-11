@@ -60,25 +60,25 @@
       "Description": "只装一种物品，容量 4096 组。",
       "CRDescription:0": "钻石抽屉"
     },
-    "ClothingBlock:100": {
-      "DisplayName": "布背包",
-      "Description": "穿在身上的背包，16 格。拖到人物身上就背上，拖出来就取下。",
-      "CRDescription:0": "布背包"
-    },
-    "ClothingBlock:101": {
-      "DisplayName": "皮革背包",
-      "Description": "穿在身上的背包，24 格。",
-      "CRDescription:0": "皮革背包"
-    },
-    "ClothingBlock:102": {
-      "DisplayName": "铁扣背包",
-      "Description": "穿在身上的背包，32 格。",
-      "CRDescription:0": "铁扣背包"
-    },
     "StashHubBlock:0": {
       "DisplayName": "存储终端",
       "Description": "贴着它的箱子、抽屉连成一片网络，点它就能统一搜索、取出、一键存入。最多接管 128 个容器。",
       "CRDescription:0": "存储终端"
+    },
+    "ClothingBlock:38": {
+      "DisplayName": "布背包",
+      "Description": "穿在身上的背包，16 格。拖到人物身上就背上，拖出来就取下。",
+      "CRDescription:0": "布背包"
+    },
+    "ClothingBlock:39": {
+      "DisplayName": "皮革背包",
+      "Description": "穿在身上的背包，24 格。",
+      "CRDescription:0": "皮革背包"
+    },
+    "ClothingBlock:40": {
+      "DisplayName": "铁扣背包",
+      "Description": "穿在身上的背包，32 格。",
+      "CRDescription:0": "铁扣背包"
     }
   }
 }

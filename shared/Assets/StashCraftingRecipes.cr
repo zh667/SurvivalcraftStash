@@ -88,19 +88,19 @@
 
 
   <!-- 背包（穿在躯干最外层）。结果写成 ClothingBlock:<data>，data 低 8 位就是衣物索引 -->
-  <Recipe Result="ClothingBlock:100" ResultCount="1" RequiredHeatLevel="0" a="cotton" b="string" Description="[0]">
+  <Recipe Result="ClothingBlock:38" ResultCount="1" RequiredHeatLevel="0" a="cotton" b="string" Description="[0]">
     "a a"
     "aaa"
     "aba"
   </Recipe>
 
-  <Recipe Result="ClothingBlock:101" ResultCount="1" RequiredHeatLevel="0" a="leather" b="string" Description="[0]">
+  <Recipe Result="ClothingBlock:39" ResultCount="1" RequiredHeatLevel="0" a="leather" b="string" Description="[0]">
     "a a"
     "aaa"
     "aba"
   </Recipe>
 
-  <Recipe Result="ClothingBlock:102" ResultCount="1" RequiredHeatLevel="0" a="leather" b="ironingot" Description="[0]">
+  <Recipe Result="ClothingBlock:40" ResultCount="1" RequiredHeatLevel="0" a="leather" b="ironingot" Description="[0]">
     "a a"
     "aaa"
     "aba"

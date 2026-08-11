@@ -10,11 +10,11 @@ namespace Game;
 /// 客户端发坐标 → 服务端找到方块实体、取出库存 Id 与档位 → 只回给这个客户端 →
 /// 客户端按 Id 找到已同步过来的库存，开我们自己的界面。
 ///
-/// 包号 220，紧挨着 <see cref="StashOpPackage"/>（219）。
+/// 包号 231，紧挨着 <see cref="StashOpPackage"/>（230）。
 /// </summary>
 public sealed class StashOpenChestPackage : IPackage
 {
-    public const byte PackageId = 220;
+    public const byte PackageId = 231;
 
     public byte ID => PackageId;
 

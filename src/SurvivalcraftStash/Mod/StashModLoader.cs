@@ -18,24 +18,31 @@ public class StashModLoader : ModLoader
     {
         StashPlatform.Register(s_platform);
 
-        try
-        {
-            PackageManager.RegisterPackage(new StashOpPackage());
-            PackageManager.RegisterPackage(new StashOpenChestPackage());
-            PackageManager.RegisterPackage(new StashOpenTerminalPackage());
-        }
-        catch (Exception exception)
-        {
-            // 包号被别的 Mod 占了。单人/主机侧仍然完全可用，只有作为客户端连别人服务器时不可用。
-            s_platform.PackageAvailable = false;
-            Log.Warning($"[Stash] 数据包注册失败（可能与其他 Mod 撞号）：{exception.Message}");
-        }
+        // 一个一个注册：之前三个写在同一个 try 里，第一个撞号后面两个就再也没注册上。
+        s_platform.PackageAvailable = Register(new StashOpPackage());
+        Register(new StashOpenChestPackage());
+        Register(new StashOpenTerminalPackage());
 
         Log.Information($"[Stash] netmod {Version} 已加载");
     }
 
     public override void ClothingWidgetOpen(ComponentGui componentGui, ClothingWidget clothingWidget) =>
         StashClothingButton.Attach(componentGui, clothingWidget);
+
+    /// <summary>注册一个包；撞号只影响这一个功能，不连累其它包。</summary>
+    private static bool Register(IPackage package)
+    {
+        try
+        {
+            PackageManager.RegisterPackage(package);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            Log.Warning($"[Stash] 数据包 {package.GetType().Name} 注册失败（与其他 Mod 撞号）：{exception.Message}");
+            return false;
+        }
+    }
 
     public override void GuiUpdate(ComponentGui componentGui) => StashAimPreview.Update(componentGui);
 

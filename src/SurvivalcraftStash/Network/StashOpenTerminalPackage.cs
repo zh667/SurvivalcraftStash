@@ -5,7 +5,7 @@ using Stash.Game;
 namespace Game;
 
 /// <summary>
-/// 打开存储终端的往返包（包号 221）。
+/// 打开存储终端的往返包（包号 232）。
 ///
 /// 和箱子那个包同样的道理：网络里有哪些容器只有服务端算得准
 /// （客户端不一定持有方块实体），所以客户端只发坐标，服务端把**库存 Id 列表**回过来，
@@ -13,7 +13,7 @@ namespace Game;
 /// </summary>
 public sealed class StashOpenTerminalPackage : IPackage
 {
-    public const byte PackageId = 221;
+    public const byte PackageId = 232;
 
     /// <summary>回包里最多带多少个库存 Id，和扫描上限一致。</summary>
     public const int MaxInventories = StashNetworkScanner.MaxContainers;

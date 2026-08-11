@@ -2,19 +2,20 @@
 <!--
   背包做成衣物：不占方块索引（所有衣物共用 ClothingBlock 203），
   贴图走衣物自己的独立贴图，不受方块图集限制——联机版同样有得看。
-  索引取 100 起：原版只用到 37；联机版衣物索引 8 位（0~255），插件版 10 位，100~102 两版都合法。
+  索引必须紧接原版最后一个（37）连续往下排：联机版的 m_clothingData 是按下标的数组，
+  留空洞会让 GetCreativeValues() 的 OrderBy 读到 null，进世界时直接崩（原版的坑，我们踩过一次）。
   暂时复用原版衣物贴图，"背上鼓一个包"要自己挂模型渲染，排在后面做。
 -->
 <Mod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <ClothingData Class="Game.ClothingData" Index="100" DisplayName="[ClothingBlock:100]" Description="[ClothingBlock:100]"
+  <ClothingData Class="Game.ClothingData" Index="38" DisplayName="[ClothingBlock:38]" Description="[ClothingBlock:38]"
                 Slot="Torso" ArmorProtection="0" Sturdiness="200" Insulation="0.2" MovementSpeedFactor="1"
                 SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="2"
                 PlayerLevelRequired="1" TextureName="Textures/Clothing/CottonSweater" ImpactSoundsFolder=""/>
-  <ClothingData Class="Game.ClothingData" Index="101" DisplayName="[ClothingBlock:101]" Description="[ClothingBlock:101]"
+  <ClothingData Class="Game.ClothingData" Index="39" DisplayName="[ClothingBlock:39]" Description="[ClothingBlock:39]"
                 Slot="Torso" ArmorProtection="0" Sturdiness="300" Insulation="0.3" MovementSpeedFactor="1"
                 SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="2"
                 PlayerLevelRequired="1" TextureName="Textures/Clothing/LeatherJerkin" ImpactSoundsFolder=""/>
-  <ClothingData Class="Game.ClothingData" Index="102" DisplayName="[ClothingBlock:102]" Description="[ClothingBlock:102]"
+  <ClothingData Class="Game.ClothingData" Index="40" DisplayName="[ClothingBlock:40]" Description="[ClothingBlock:40]"
                 Slot="Torso" ArmorProtection="0" Sturdiness="500" Insulation="0.2" MovementSpeedFactor="1"
                 SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="2"
                 PlayerLevelRequired="1" TextureName="Textures/Clothing/ChainMail" ImpactSoundsFolder=""/>

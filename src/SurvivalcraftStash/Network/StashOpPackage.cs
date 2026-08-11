@@ -11,12 +11,13 @@ namespace Game;
 /// 为什么不让客户端直接改：`ComponentInventoryPackage` 那套原版流程里，
 /// 服务端才是权威方，客户端本地改槽位不会被承认，而且服务端对越权操作会直接踢人。
 ///
-/// 包号 219：原版占用 0-40 / 56-59 / 250-253，SCTM 用了 41 和 217，这里挑一个离得远的。
+/// 包号 230：原版占用 0-40 / 56-59 / 250-253；同作者的 SCTM 用了 41 / 217，Genius 用了 219。
+/// （219 一开始被本包占用，撞上了 Genius，实机日志里报了 ID 冲突，所以整段挪到 230~232。）
 /// 与其它 Mod 撞号时 PackageManager.RegisterPackage 会抛异常，我们捕获后降级为"只在本地生效"。
 /// </summary>
 public sealed class StashOpPackage : IPackage
 {
-    public const byte PackageId = 219;
+    public const byte PackageId = 230;
 
     /// <summary>单个包最多携带的赋值条数，防止被构造成超大包打服务端。</summary>
     public const int MaxAssignments = 512;

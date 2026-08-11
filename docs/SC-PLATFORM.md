@@ -90,6 +90,25 @@ ContentsMask = 1023, LightShift = 10, DataShift = 14, DataMask = -16384
   各方块 `GetCreativeValues()` 列条目，`RecipaediaRecipesScreen` 按 `ResultValue` 取配方。
   只要类别、创造值、`.cr` 三者对上就会出现，不需要额外代码。原版箱子的类别是 `Items`。
 
+## 5.2 实机踩到的坑（2026-08-11 第一次装进游戏）
+
+- **联机版加衣物必须索引连续，否则所有世界都进不去**（原版的 bug，我们踩了）：
+  `ClothingBlock.m_clothingData` 是**按索引下标的 DynamicArray**，`LoadClothingData` 里
+  `if (result >= Count) Count = result + 1;` 会把中间撑出一堆 null；
+  而 `GetCreativeValues()` 写的是
+  ```csharp
+  m_clothingData.OrderBy(cd => cd.DisplayIndex)      // ← 排序阶段就读 null.DisplayIndex，NRE
+  foreach (...) { if (clothingData != null) { ... } } // 循环体里判了空，但已经晚了
+  ```
+  → 进世界时 `ComponentCreativeInventory.Load` 抛 NullReferenceException，新老世界全部打不开。
+  我们最初把背包放在索引 100，38~99 全是 null，直接炸。**必须紧接原版最后一个（37）连续往下排。**
+  插件版没这个问题（那边 `m_clothingData` 是 Dictionary），但为了两版一致，索引统一取 38~40。
+
+- **包号要避开生态里其他 Mod**。实机日志：`数据包ID冲突！ID:219 已被 GeniusToolPackage 占用`。
+  目前已知占用：原版 0-40 / 56-59 / 250-253，SCTM 41 / 217，Genius 219。本 Mod 改用 **230 / 231 / 232**。
+
+- **多个包要一个一个注册**：写在同一个 `try` 里的话，第一个撞号抛异常，后面的包会全部漏注册。
+
 ## 6. 已知的坑
 
 - 联机版世界文件夹名会被回收复用（见 SCTM 经验）→ 世界侧注册表必须带**种子/世界 GUID 校验**，否则串档。
