@@ -52,11 +52,12 @@ public static class StashDrawerCore
     /// </summary>
     public static bool Interact(ComponentStashDrawer drawer, ComponentMiner miner)
     {
-        IInventory inventory = miner?.Inventory;
-        if (drawer == null || inventory == null)
+        if (drawer == null || miner?.Inventory == null)
         {
             return false;
         }
+
+        IInventory inventory = miner.Inventory;
 
         int activeSlot = inventory.ActiveSlotIndex;
         int heldValue = activeSlot >= 0 ? inventory.GetSlotValue(activeSlot) : 0;

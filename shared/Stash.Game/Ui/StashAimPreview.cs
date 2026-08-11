@@ -20,7 +20,12 @@ public static class StashAimPreview
 
     public static void Update(ComponentGui gui)
     {
-        ComponentPlayer? player = gui?.m_componentPlayer;
+        if (gui == null)
+        {
+            return;
+        }
+
+        ComponentPlayer? player = gui.m_componentPlayer;
         if (player?.ComponentMiner == null)
         {
             return;
@@ -69,8 +74,8 @@ public static class StashAimPreview
             return string.Empty;
         }
 
-        SubsystemBlockEntities blockEntities = player.Project.FindSubsystem<SubsystemBlockEntities>();
-        ComponentBlockEntity blockEntity = blockEntities?.GetBlockEntity(
+        SubsystemBlockEntities? blockEntities = player.Project.FindSubsystem<SubsystemBlockEntities>();
+        ComponentBlockEntity? blockEntity = blockEntities?.GetBlockEntity(
             result.CellFace.X, result.CellFace.Y, result.CellFace.Z);
         var drawer = blockEntity?.Entity.FindComponent<ComponentStashDrawer>(throwOnError: false);
         if (drawer == null)

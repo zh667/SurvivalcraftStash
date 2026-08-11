@@ -19,11 +19,12 @@ public static class StashUpgradeUse
         ComponentMiner miner,
         TerrainRaycastResult raycastResult)
     {
-        IInventory inventory = miner?.Inventory;
-        if (inventory == null)
+        if (miner?.Inventory == null)
         {
             return false;
         }
+
+        IInventory inventory = miner.Inventory;
 
         int activeSlot = inventory.ActiveSlotIndex;
         int heldValue = inventory.GetSlotValue(activeSlot);
