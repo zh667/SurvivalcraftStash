@@ -28,6 +28,14 @@ public class SubsystemStashChestBlockBehavior : SubsystemBlockBehavior
         m_audio = Project.FindSubsystem<SubsystemAudio>(throwOnError: true);
     }
 
+    /// <summary>
+    /// 注意：联机版 <c>SubsystemTerrain.ChangeCell</c> 在 <c>miner == null</c> 时**只调 5 参版**，
+    /// 只覆写 6 参版的话，升级箱子（走 ChangeCell）就不会建方块实体——
+    /// 表现就是"外观变了但提示升级失败，而且箱子打不开"。两个都要覆写。
+    /// </summary>
+    public override void OnBlockAdded(int value, int oldValue, int x, int y, int z) =>
+        StashChestCore.OnChestAdded(Project, m_blockEntities, value, x, y, z);
+
     public override void OnBlockAdded(int value, int oldValue, int x, int y, int z, ComponentMiner miner)
     {
         ComponentBlockEntity? blockEntity = StashChestCore.OnChestAdded(Project, m_blockEntities, value, x, y, z);

@@ -23,11 +23,10 @@ public static class StashNetworkScanner
         new(0, 0, 1), new(0, 0, -1),
     };
 
-    /// <summary>这个方块算不算网络的一部分（枢纽自己、我们的箱子和抽屉、原版木箱）。</summary>
+    /// <summary>这个方块算不算网络的一部分（枢纽自己、分级箱子、原版木箱）。</summary>
     public static bool IsNetworkBlock(int contents) =>
         contents == StashChestTiers.VanillaChestIndex
         || StashChestTiers.IsStashChest(contents)
-        || StashDrawerTiers.IsDrawer(contents)
         || contents == StashHubBlock.Index;
 
     public static List<ComponentBlockEntity> Scan(

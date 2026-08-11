@@ -8,11 +8,14 @@ using Stash.Shared.Storage;
 namespace Stash.Game;
 
 /// <summary>
-/// 存储终端界面：把整片网络的东西汇总成一张表，能搜、能点着取、能一键存入。
+/// 存储终端界面：把整片网络的东西汇总成一张表，能搜、能点着取。
 ///
 /// 这里**没有**用 <c>InventorySlotWidget</c>：那个控件必须绑一个真实的 <c>IInventory</c> 槽位，
 /// 而终端里的一格是"跨若干容器汇总出来的一种物品"，没有对应的真实槽位。
 /// 所以格子是自己搭的：方块图标 + 数量 + 可点击区域。
+///
+/// 终端**只负责取**，不做一键存入——存东西就走箱子界面里的"存入"按钮，
+/// 那里能看清是往哪个箱子存、存了什么。（终端里的一键存入会把东西散进整片网络，看不出去向。）
 /// </summary>
 public sealed class StashTerminalWidget : CanvasWidget
 {
@@ -26,7 +29,6 @@ public sealed class StashTerminalWidget : CanvasWidget
     private readonly List<IInventory> m_containers;
     private readonly TextBoxWidget m_searchBox;
     private readonly LabelWidget m_statusLabel;
-    private readonly ButtonWidget m_depositButton;
     private readonly ButtonWidget m_pageUpButton;
     private readonly ButtonWidget m_pageDownButton;
     private readonly List<Cell> m_cells = new();
@@ -52,13 +54,9 @@ public sealed class StashTerminalWidget : CanvasWidget
         Children.Add(title);
         SetWidgetPosition(title, new Vector2(Padding, 12f));
 
-        m_searchBox = new TextBoxWidget { Size = new Vector2(gridWidth - 150f, 36f) };
+        m_searchBox = new TextBoxWidget { Size = new Vector2(gridWidth - 80f, 36f) };
         Children.Add(m_searchBox);
         SetWidgetPosition(m_searchBox, new Vector2(Padding, 44f));
-
-        m_depositButton = new BevelledButtonWidget { Text = StashText.Deposit, Size = new Vector2(70f, 36f) };
-        Children.Add(m_depositButton);
-        SetWidgetPosition(m_depositButton, new Vector2(Padding + gridWidth - 140f, 44f));
 
         m_pageUpButton = new BevelledButtonWidget { Text = "▲", Size = new Vector2(32f, 36f) };
         Children.Add(m_pageUpButton);
@@ -110,11 +108,6 @@ public sealed class StashTerminalWidget : CanvasWidget
         {
             m_page++;
             Refresh();
-        }
-
-        if (m_depositButton.IsClicked)
-        {
-            Deposit();
         }
 
         for (int i = 0; i < m_cells.Count; i++)
@@ -206,14 +199,6 @@ public sealed class StashTerminalWidget : CanvasWidget
         Execute(transfer, StashText.TerminalTaken, StashText.TerminalNoRoom);
     }
 
-    private void Deposit()
-    {
-        (List<InventorySnapshot> containers, InventorySnapshot player) = Snapshot();
-        PlayerStashData settings = StashStore.ForCurrentPlayer();
-
-        NetworkTransferPlan transfer = NetworkTransfer.PlanDeposit(containers, player, settings.LockedSlotSet());
-        Execute(transfer, StashText.TerminalStored, StashText.TerminalFull);
-    }
 
     private void Execute(NetworkTransferPlan transfer, Func<int, string> success, string failure)
     {

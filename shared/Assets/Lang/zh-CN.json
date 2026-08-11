@@ -40,26 +40,6 @@
       "Description": "拿着它对钻石箱使用。",
       "CRDescription:0": "观景箱升级件"
     },
-    "StashWoodDrawerBlock:0": {
-      "DisplayName": "木抽屉",
-      "Description": "只装一种物品，容量 64 组。拿着东西点它就全存进去，空手点取出一组。",
-      "CRDescription:0": "木抽屉"
-    },
-    "StashCopperDrawerBlock:0": {
-      "DisplayName": "铜抽屉",
-      "Description": "只装一种物品，容量 256 组。",
-      "CRDescription:0": "铜抽屉"
-    },
-    "StashIronDrawerBlock:0": {
-      "DisplayName": "铁抽屉",
-      "Description": "只装一种物品，容量 1024 组。",
-      "CRDescription:0": "铁抽屉"
-    },
-    "StashDiamondDrawerBlock:0": {
-      "DisplayName": "钻石抽屉",
-      "Description": "只装一种物品，容量 4096 组。",
-      "CRDescription:0": "钻石抽屉"
-    },
     "StashHubBlock:0": {
       "DisplayName": "存储终端",
       "Description": "贴着它的箱子、抽屉连成一片网络，点它就能统一搜索、取出、一键存入。最多接管 128 个容器。",
@@ -79,6 +59,16 @@
       "DisplayName": "铁扣背包",
       "Description": "穿在身上的背包，32 格。",
       "CRDescription:0": "铁扣背包"
+    },
+    "StashChestUpgradeBlock:4": {
+      "DisplayName": "皮革背包升级件",
+      "Description": "拿着它对身上穿的布背包使用，升级成皮革背包，里面的东西不动。",
+      "CRDescription:0": "皮革背包升级件"
+    },
+    "StashChestUpgradeBlock:5": {
+      "DisplayName": "铁扣背包升级件",
+      "Description": "拿着它对身上穿的皮革背包使用。",
+      "CRDescription:0": "铁扣背包升级件"
     }
   }
 }

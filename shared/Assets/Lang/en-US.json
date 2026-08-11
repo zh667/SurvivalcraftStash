@@ -40,26 +40,6 @@
       "Description": "Use on a diamond chest.",
       "CRDescription:0": "Observation Chest Upgrade"
     },
-    "StashWoodDrawerBlock:0": {
-      "DisplayName": "Wooden Drawer",
-      "Description": "Holds one item type, 64 stacks. Tap with an item to store all of it; tap empty-handed to take one stack.",
-      "CRDescription:0": "Wooden Drawer"
-    },
-    "StashCopperDrawerBlock:0": {
-      "DisplayName": "Copper Drawer",
-      "Description": "Holds one item type, 256 stacks.",
-      "CRDescription:0": "Copper Drawer"
-    },
-    "StashIronDrawerBlock:0": {
-      "DisplayName": "Iron Drawer",
-      "Description": "Holds one item type, 1024 stacks.",
-      "CRDescription:0": "Iron Drawer"
-    },
-    "StashDiamondDrawerBlock:0": {
-      "DisplayName": "Diamond Drawer",
-      "Description": "Holds one item type, 4096 stacks.",
-      "CRDescription:0": "Diamond Drawer"
-    },
     "StashHubBlock:0": {
       "DisplayName": "Storage Terminal",
       "Description": "Chests and drawers touching it form one network; tap to search, take and deposit across all of them. Up to 128 containers.",
@@ -79,6 +59,16 @@
       "DisplayName": "Ironbound Backpack",
       "Description": "A worn backpack with 32 slots.",
       "CRDescription:0": "Ironbound Backpack"
+    },
+    "StashChestUpgradeBlock:4": {
+      "DisplayName": "Leather Backpack Upgrade",
+      "Description": "Use while wearing a cloth backpack to upgrade it in place.",
+      "CRDescription:0": "Leather Backpack Upgrade"
+    },
+    "StashChestUpgradeBlock:5": {
+      "DisplayName": "Ironbound Backpack Upgrade",
+      "Description": "Use while wearing a leather backpack.",
+      "CRDescription:0": "Ironbound Backpack Upgrade"
     }
   }
 }

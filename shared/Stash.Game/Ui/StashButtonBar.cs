@@ -22,6 +22,7 @@ public sealed class StashButtonBar : StackPanelWidget
     private readonly ButtonWidget? m_depositAllButton;
     private readonly ButtonWidget? m_takeButton;
     private readonly ButtonWidget? m_lockButton;
+    private readonly ButtonWidget? m_backpackButton;
     private readonly ButtonWidget m_undoButton;
     private readonly List<SlotLockOverlay> m_lockOverlays = new();
 
@@ -53,6 +54,13 @@ public sealed class StashButtonBar : StackPanelWidget
             m_depositButton = AddButton(StashText.Deposit);
             m_depositAllButton = AddButton(StashText.DepositAll);
             m_takeButton = AddButton(StashText.Restock);
+        }
+
+        // 背包入口挂在这里而不是衣物界面：联机版派发 ClothingWidgetOpen 时传的钩子名是空串
+        // （原版写漏了），那个钩子永远不会触发。放在按钮栏里两版都能用，也更好找。
+        if (player != null && gui?.m_componentPlayer != null)
+        {
+            m_backpackButton = AddButton(StashText.OpenBackpack);
         }
 
         if (player != null)
@@ -131,6 +139,11 @@ public sealed class StashButtonBar : StackPanelWidget
         if (m_takeButton is { IsClicked: true })
         {
             Transfer(m_container, m_player, TransferMode.All);
+        }
+
+        if (m_backpackButton is { IsClicked: true } && m_gui?.m_componentPlayer != null)
+        {
+            StashBackpack.Open(m_gui.m_componentPlayer);
         }
 
         if (m_undoButton.IsClicked)

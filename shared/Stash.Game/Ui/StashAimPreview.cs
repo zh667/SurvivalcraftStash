@@ -4,11 +4,8 @@ using Game;
 namespace Stash.Game;
 
 /// <summary>
-/// 准星指着容器时，在屏幕上提示里面装了什么。
-///
-/// 抽屉最需要这个——它的意义就是"不开界面也知道装了什么"。
-/// 在方块正面直接画图标和数量要自己搭一套世界空间渲染（原版告示牌那套有 550 行），
-/// 先用这个成本低得多的方式达到同样的目的，正面渲染留到后面做。
+/// 准星指着分级箱子时，在屏幕上提示里面装了几种东西、占了多少格。
+/// 不用挨个打开就能大致知道哪个箱子还有空位。
 /// </summary>
 public static class StashAimPreview
 {
@@ -69,7 +66,8 @@ public static class StashAimPreview
         }
 
         int contents = Terrain.ExtractContents(result.Value);
-        if (!StashDrawerTiers.IsDrawer(contents))
+        StashChestTier? tier = StashChestTiers.ByBlockIndex(contents);
+        if (tier == null)
         {
             return string.Empty;
         }
@@ -77,20 +75,27 @@ public static class StashAimPreview
         SubsystemBlockEntities? blockEntities = player.Project.FindSubsystem<SubsystemBlockEntities>();
         ComponentBlockEntity? blockEntity = blockEntities?.GetBlockEntity(
             result.CellFace.X, result.CellFace.Y, result.CellFace.Z);
-        var drawer = blockEntity?.Entity.FindComponent<ComponentStashDrawer>(throwOnError: false);
-        if (drawer == null)
+        var chest = blockEntity?.Entity.FindComponent<ComponentStashChest>(throwOnError: false);
+        if (chest == null)
         {
             return string.Empty;
         }
 
-        if (drawer.StoredCount <= 0)
+        int used = 0;
+        long total = 0;
+        for (int slot = 0; slot < chest.SlotsCount; slot++)
         {
-            return StashText.DrawerEmpty;
+            int count = chest.GetSlotCount(slot);
+            if (count > 0)
+            {
+                used++;
+                total += count;
+            }
         }
 
-        Block block = BlocksManager.Blocks[Terrain.ExtractContents(drawer.StoredValue)];
-        string name = block.GetDisplayName(player.Project.FindSubsystem<SubsystemTerrain>(), drawer.StoredValue);
-        return $"{name} × {FormatCount(drawer.StoredCount)} / {FormatCount(drawer.StoredCapacity)}";
+        return used == 0
+            ? StashText.ChestEmpty(tier)
+            : StashText.ChestSummary(tier, used, chest.SlotsCount, total);
     }
 
     /// <summary>抽屉数量能到十几万，原样显示会占掉半行，所以大数缩写。</summary>

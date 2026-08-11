@@ -18,6 +18,12 @@ public class StashModLoader : ModLoader
     {
         StashPlatform.Register(s_platform);
 
+        // 钩子必须显式注册，否则 override 根本不会被调用（官方示例模组里写明了这一点）。
+        // 之前漏了这一步 → 整理按钮、准星预览、世界数据加载全部没生效。
+        ModsManager.RegisterHook("OnModalPanelWidgetSet", this);
+        ModsManager.RegisterHook("GuiUpdate", this);
+        ModsManager.RegisterHook("OnLoadingFinished", this);
+
         // 一个一个注册：之前三个写在同一个 try 里，第一个撞号后面两个就再也没注册上。
         s_platform.PackageAvailable = Register(new StashOpPackage());
         Register(new StashOpenChestPackage());
@@ -25,9 +31,6 @@ public class StashModLoader : ModLoader
 
         Log.Information($"[Stash] netmod {Version} 已加载");
     }
-
-    public override void ClothingWidgetOpen(ComponentGui componentGui, ClothingWidget clothingWidget) =>
-        StashClothingButton.Attach(componentGui, clothingWidget);
 
     /// <summary>注册一个包；撞号只影响这一个功能，不连累其它包。</summary>
     private static bool Register(IPackage package)

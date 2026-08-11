@@ -61,32 +61,6 @@
   </Recipe>
 
 
-  <!-- 抽屉：木箱 + 一圈材料；档位越高容量越大 -->
-  <Recipe Result="StashWoodDrawerBlock" ResultCount="1" RequiredHeatLevel="0" a="planks" b="chest" Description="[0]">
-    "aaa"
-    "aba"
-    "aaa"
-  </Recipe>
-
-  <Recipe Result="StashCopperDrawerBlock" ResultCount="1" RequiredHeatLevel="0" a="copperingot" b="stashwooddrawer" Description="[0]">
-    "aaa"
-    "aba"
-    "aaa"
-  </Recipe>
-
-  <Recipe Result="StashIronDrawerBlock" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="stashcopperdrawer" Description="[0]">
-    "aaa"
-    "aba"
-    "aaa"
-  </Recipe>
-
-  <Recipe Result="StashDiamondDrawerBlock" ResultCount="1" RequiredHeatLevel="0" a="diamond" b="stashirondrawer" Description="[0]">
-    "aaa"
-    "aba"
-    "aaa"
-  </Recipe>
-
-
   <!-- 背包（穿在躯干最外层）。结果写成 ClothingBlock:<data>，data 低 8 位就是衣物索引 -->
   <Recipe Result="ClothingBlock:38" ResultCount="1" RequiredHeatLevel="0" a="cotton" b="string" Description="[0]">
     "a a"
@@ -94,16 +68,17 @@
     "aba"
   </Recipe>
 
-  <Recipe Result="ClothingBlock:39" ResultCount="1" RequiredHeatLevel="0" a="leather" b="string" Description="[0]">
-    "a a"
+  <!-- 背包升级件：和箱子一个用法，拿着对身上的背包用一下就升一档，里面的东西不动 -->
+  <Recipe Result="StashChestUpgradeBlock:4" ResultCount="1" RequiredHeatLevel="0" a="leather" b="string" Description="[0]">
     "aaa"
     "aba"
+    "aaa"
   </Recipe>
 
-  <Recipe Result="ClothingBlock:40" ResultCount="1" RequiredHeatLevel="0" a="leather" b="ironingot" Description="[0]">
-    "a a"
+  <Recipe Result="StashChestUpgradeBlock:5" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="leather" Description="[0]">
     "aaa"
     "aba"
+    "aaa"
   </Recipe>
 
 

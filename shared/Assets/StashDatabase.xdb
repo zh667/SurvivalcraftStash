@@ -18,9 +18,6 @@
     <MemberSubsystemTemplate Name="StashUpgradeBlockBehavior" Guid="3779bd7a-7e00-4ddb-8b64-c6ad866777a9" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
       <Parameter Name="Class" Guid="3e187bf2-bfb3-4747-a075-75b42bf0e6e5" Value="Game.SubsystemStashUpgradeBlockBehavior" Type="string"/>
     </MemberSubsystemTemplate>
-    <MemberSubsystemTemplate Name="StashDrawerBlockBehavior" Guid="c7ae192c-8d39-4da0-a65b-c3c363da8b43" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
-      <Parameter Name="Class" Guid="4b76315f-e473-40c4-b472-8d53cd9daff8" Value="Game.SubsystemStashDrawerBlockBehavior" Type="string"/>
-    </MemberSubsystemTemplate>
     <MemberSubsystemTemplate Name="StashHubBlockBehavior" Guid="f968ed5e-bd7b-4377-8005-2c53218ba20d" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
       <Parameter Name="Class" Guid="914b9525-ff36-41be-8b5c-46ad2e8a14e1" Value="Game.SubsystemStashHubBlockBehavior" Type="string"/>
     </MemberSubsystemTemplate>
@@ -29,6 +26,7 @@
     <MemberComponentTemplate Name="Chest" Guid="fe5dccf1-762f-429c-ab0e-26f5294d5814" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
       <Parameter Name="Class" Guid="b9b40dbd-e942-4a1e-9771-67aa959deccc" Value="Game.ComponentStashChest" Type="string"/>
       <Parameter Name="SlotsCount" Guid="7cc43c45-4832-43cf-bc0d-c353bae40632" Value="32" Type="int"/>
+      <Parameter Name="StackMultiplier" Guid="3e1080bc-99d0-4d79-a912-d18b660aa3c8" Value="2" Type="int"/>
     </MemberComponentTemplate>
     <MemberComponentTemplate Name="BlockEntity" Guid="0acf33de-11f9-4897-8291-9c09c536b859" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
   </EntityTemplate>
@@ -36,6 +34,7 @@
     <MemberComponentTemplate Name="Chest" Guid="da7a50cb-1a6d-4068-8701-16b59b191d2a" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
       <Parameter Name="Class" Guid="96560c58-0041-43f1-a414-7e8b16f0f574" Value="Game.ComponentStashChest" Type="string"/>
       <Parameter Name="SlotsCount" Guid="e609f294-4784-41f9-9c0b-47d9fb354e8c" Value="48" Type="int"/>
+      <Parameter Name="StackMultiplier" Guid="a0312321-6f8c-4c86-ac8e-f58c2df7397d" Value="4" Type="int"/>
     </MemberComponentTemplate>
     <MemberComponentTemplate Name="BlockEntity" Guid="00078e9b-ec48-44fc-86df-26040678abb9" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
   </EntityTemplate>
@@ -43,6 +42,7 @@
     <MemberComponentTemplate Name="Chest" Guid="85df311b-1d95-4434-98f1-e7287c9b7056" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
       <Parameter Name="Class" Guid="a9acd467-f152-4d83-81b2-f2208868aacd" Value="Game.ComponentStashChest" Type="string"/>
       <Parameter Name="SlotsCount" Guid="6dcc8bfe-e2c5-49ee-9311-c37b8ca86de8" Value="80" Type="int"/>
+      <Parameter Name="StackMultiplier" Guid="11195508-29a8-4394-9d05-878c15746988" Value="16" Type="int"/>
     </MemberComponentTemplate>
     <MemberComponentTemplate Name="BlockEntity" Guid="567ba85a-4f02-4fa1-9238-bd81c85fbed2" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
   </EntityTemplate>
@@ -50,40 +50,9 @@
     <MemberComponentTemplate Name="Chest" Guid="ea70774e-068c-4d47-892b-bc53fca496a9" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
       <Parameter Name="Class" Guid="6e890da9-ad5e-417a-a50a-8564fd8aea7d" Value="Game.ComponentStashChest" Type="string"/>
       <Parameter Name="SlotsCount" Guid="89306935-abb4-4c99-b86f-add93804d1f0" Value="80" Type="int"/>
+      <Parameter Name="StackMultiplier" Guid="172d3a62-543d-43eb-aa3f-6acf14e6b019" Value="16" Type="int"/>
     </MemberComponentTemplate>
     <MemberComponentTemplate Name="BlockEntity" Guid="b69fdd4e-03fe-4cf3-a806-772b4e7b5c35" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
-  </EntityTemplate>
-  <EntityTemplate Name="StashDrawerWood" Guid="8b9ce2db-4883-43cb-8863-685b786e62f1">
-    <MemberComponentTemplate Name="Chest" Guid="2da1f78d-bd22-4c49-9950-760cc0a99b0b" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
-      <Parameter Name="Class" Guid="4b76901f-0d27-4bc9-ad59-d4576b74e45f" Value="Game.ComponentStashDrawer" Type="string"/>
-      <Parameter Name="SlotsCount" Guid="fad7ac28-b42c-460e-976e-b049f3435d94" Value="1" Type="int"/>
-      <Parameter Name="CapacityInStacks" Guid="db6cf1f3-9fe6-408f-85b3-eb3f35e207ff" Value="64" Type="int"/>
-    </MemberComponentTemplate>
-    <MemberComponentTemplate Name="BlockEntity" Guid="13affc94-da32-49c0-a90e-ec07aef81c64" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
-  </EntityTemplate>
-  <EntityTemplate Name="StashDrawerCopper" Guid="0c1267c6-473e-4d2a-a4fd-36e87f833a2b">
-    <MemberComponentTemplate Name="Chest" Guid="f5847f4a-9147-43ff-9b8d-0859fe2ac9d5" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
-      <Parameter Name="Class" Guid="eaf2cfaa-ac92-4743-9dfc-becaf1c27adc" Value="Game.ComponentStashDrawer" Type="string"/>
-      <Parameter Name="SlotsCount" Guid="0e40e335-d2f4-4efd-afd9-6edcaca99591" Value="1" Type="int"/>
-      <Parameter Name="CapacityInStacks" Guid="ed9fc642-ec74-4b23-a466-69a217255369" Value="256" Type="int"/>
-    </MemberComponentTemplate>
-    <MemberComponentTemplate Name="BlockEntity" Guid="45db8535-c234-4940-b3cd-74bb5d07d4cf" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
-  </EntityTemplate>
-  <EntityTemplate Name="StashDrawerIron" Guid="e6e82066-3e88-4d11-a329-7262d90961cf">
-    <MemberComponentTemplate Name="Chest" Guid="59b5f3d5-e1df-4d35-8450-436b9681cfa9" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
-      <Parameter Name="Class" Guid="d8e812c7-4101-4d90-9814-387c717ef65b" Value="Game.ComponentStashDrawer" Type="string"/>
-      <Parameter Name="SlotsCount" Guid="d7ef8f73-7bce-4167-b2f3-6d0d9f095b60" Value="1" Type="int"/>
-      <Parameter Name="CapacityInStacks" Guid="ae90e867-81d8-45c7-b280-b16a4d71640d" Value="1024" Type="int"/>
-    </MemberComponentTemplate>
-    <MemberComponentTemplate Name="BlockEntity" Guid="46b4b5a2-43bf-4a03-9a7e-71ffa8389c8d" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
-  </EntityTemplate>
-  <EntityTemplate Name="StashDrawerDiamond" Guid="75238138-283c-475c-a69d-5eaa3d84608b">
-    <MemberComponentTemplate Name="Chest" Guid="80b61b89-9550-49a0-bbf7-17af1682a865" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
-      <Parameter Name="Class" Guid="9b1fa2f3-8daf-4fe3-9d6a-25e28a86e46e" Value="Game.ComponentStashDrawer" Type="string"/>
-      <Parameter Name="SlotsCount" Guid="836d2fb0-5a32-46a7-8ed3-c216c348f2b2" Value="1" Type="int"/>
-      <Parameter Name="CapacityInStacks" Guid="06109e7f-458c-4e04-8cfb-0927117312ec" Value="4096" Type="int"/>
-    </MemberComponentTemplate>
-    <MemberComponentTemplate Name="BlockEntity" Guid="4b17fcb5-0088-447b-b621-b5da24d98506" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
   </EntityTemplate>
   <!-- 随身背包：挂在玩家实体上，存档与联机同步都由原版负责 -->
   <EntityTemplate Name="Player" Guid="4be6c1c5-d65d-4537-8a8b-a391969e6dc2">

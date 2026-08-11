@@ -28,7 +28,7 @@ public class StashChestUpgradeBlock : CubeBlock
         int z)
     {
         // 不可放置，理论上不会进地形；留个安全实现免得别的 Mod 强行放置时崩。
-        generator.GenerateCubeVertices(this, value, x, y, z, StashChestTiers.UpgradeTint(Terrain.ExtractData(value)), geometry.OpaqueSubsetsByFace);
+        generator.GenerateCubeVertices(this, value, x, y, z, TintOf(Terrain.ExtractData(value)), geometry.OpaqueSubsetsByFace);
     }
 
     public override void DrawBlock(
@@ -39,13 +39,14 @@ public class StashChestUpgradeBlock : CubeBlock
         ref Matrix matrix,
         DrawBlockEnvironmentData environmentData)
     {
-        Color tinted = color * StashChestTiers.UpgradeTint(Terrain.ExtractData(value));
+        Color tinted = color * TintOf(Terrain.ExtractData(value));
         BlocksManager.DrawCubeBlock(primitivesRenderer, value, new Vector3(size), ref matrix, tinted, tinted, environmentData);
     }
 
     public override IEnumerable<int> GetCreativeValues()
     {
-        for (int data = 0; data < StashChestTiers.UpgradeChain.Count; data++)
+        // 0~3 箱子升级件，4~5 背包升级件
+        for (int data = 0; data < StashChestTiers.UpgradeChain.Count + 2; data++)
         {
             yield return Terrain.MakeBlockValue(BlockIndex, 0, data);
         }
@@ -53,6 +54,12 @@ public class StashChestUpgradeBlock : CubeBlock
 
     public override string GetDisplayName(SubsystemTerrain subsystemTerrain, int value) =>
         StashText.UpgradeName(Terrain.ExtractData(value));
+
+    /// <summary>背包升级件用背包的布色，箱子升级件用目标箱子的色调。</summary>
+    private static Color TintOf(int data) =>
+        data >= StashBackpackUpgrade.FirstUpgradeData
+            ? new Color(190, 150, 110)
+            : StashChestTiers.UpgradeTint(data);
 
     public override string GetCategory(int value) => "Items";
 }

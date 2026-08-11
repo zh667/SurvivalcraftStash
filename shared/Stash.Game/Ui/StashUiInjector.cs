@@ -67,6 +67,14 @@ public static class StashUiInjector
 
         var bar = new StashButtonBar(gui, player, container);
         host.Children.Add(bar);
+
+        // 放在面板**正上方**（y 取负数）。原先贴在面板内顶部会压住"箱子/背包"两个标题，
+        // 实机反馈是"没看到整理按钮在哪"。CanvasWidget 默认不裁剪子控件，负坐标能正常显示。
+        if (host is CanvasWidget canvas)
+        {
+            canvas.SetWidgetPosition(bar, new Vector2(4f, -40f));
+        }
+
         s_injected.Add(panel);
     }
 

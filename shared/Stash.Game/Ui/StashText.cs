@@ -55,8 +55,13 @@ public static class StashText
         1 => UseEnglish ? "Iron Chest Upgrade" : "铁箱升级件",
         2 => UseEnglish ? "Diamond Chest Upgrade" : "钻石箱升级件",
         3 => UseEnglish ? "Observation Chest Upgrade" : "观景箱升级件",
-        _ => UseEnglish ? "Chest Upgrade" : "箱子升级件",
+        4 => UseEnglish ? "Leather Backpack Upgrade" : "皮革背包升级件",
+        5 => UseEnglish ? "Ironbound Backpack Upgrade" : "铁扣背包升级件",
+        _ => UseEnglish ? "Upgrade Kit" : "升级件",
     };
+
+    public static string BackpackUpgraded(StashBackpackTier tier) =>
+        UseEnglish ? $"Upgraded to {BackpackName(tier)}" : $"背包升级为{BackpackName(tier)}";
 
     public static string UpgradeWrongTier =>
         UseEnglish ? "This upgrade does not fit that chest" : "这个升级件配不上这个箱子";
@@ -80,6 +85,13 @@ public static class StashText
 
     public static string OpenBackpack => UseEnglish ? "Backpack" : "背包";
 
+    public static string ChestEmpty(StashChestTier tier) =>
+        UseEnglish ? $"{ChestName(tier)} · empty" : $"{ChestName(tier)} · 空的";
+
+    public static string ChestSummary(StashChestTier tier, int usedSlots, int totalSlots, long items) => UseEnglish
+        ? $"{ChestName(tier)} · {usedSlots}/{totalSlots} slots · {items} items"
+        : $"{ChestName(tier)} · {usedSlots}/{totalSlots} 格 · 共 {items} 个";
+
     public static string HubName => UseEnglish ? "Storage Terminal" : "存储终端";
 
     public static string TerminalStatus(int containers, int kinds, int page, int pages) => UseEnglish
@@ -96,24 +108,10 @@ public static class StashText
 
     public static string HubEmpty => UseEnglish ? "No containers connected" : "枢纽旁边没有连着容器";
 
-    public static string DrawerName(StashDrawerTier tier) => tier.Key switch
-    {
-        "wood" => UseEnglish ? "Wooden Drawer" : "木抽屉",
-        "copper" => UseEnglish ? "Copper Drawer" : "铜抽屉",
-        "iron" => UseEnglish ? "Iron Drawer" : "铁抽屉",
-        "diamond" => UseEnglish ? "Diamond Drawer" : "钻石抽屉",
-        _ => UseEnglish ? "Drawer" : "抽屉",
-    };
 
-    public static string DrawerStored(int count) =>
-        UseEnglish ? $"Stored {count}" : $"存入 {count} 个";
 
-    public static string DrawerTaken(int count) =>
-        UseEnglish ? $"Took {count}" : $"取出 {count} 个";
 
-    public static string DrawerFull => UseEnglish ? "Drawer is full" : "抽屉满了";
 
-    public static string DrawerEmpty => UseEnglish ? "Drawer is empty" : "抽屉是空的";
 
     public static string Upgraded =>
         UseEnglish ? "Chest upgraded" : "箱子已升级";

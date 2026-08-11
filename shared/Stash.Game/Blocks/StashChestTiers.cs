@@ -15,7 +15,8 @@ public sealed record StashChestTier(
     int Columns,
     float SlotSize,
     Color Tint,
-    string EntityTemplateName)
+    string EntityTemplateName,
+    int StackMultiplier)
 {
     public int Rows => SlotsCount / Columns;
 }
@@ -36,21 +37,23 @@ public static class StashChestTiers
     /// <summary>木箱是原版箱子（索引 45），不属于我们的方块，只作为升级链的起点。</summary>
     public const int VanillaChestIndex = 45;
 
+    // StackMultiplier：这一档箱子每格能装几倍于原版堆叠上限。
+    // 比起单开一种抽屉方块，直接把格子容量做大更直白——想囤圆石就升箱子，不用记两套东西。
     public static readonly StashChestTier Copper = new(
         CopperChestIndex, "copper", SlotsCount: 32, Columns: 8, SlotSize: 60f,
-        new Color(200, 160, 96), "StashChestCopper");
+        new Color(200, 160, 96), "StashChestCopper", StackMultiplier: 2);
 
     public static readonly StashChestTier Iron = new(
         IronChestIndex, "iron", SlotsCount: 48, Columns: 8, SlotSize: 60f,
-        new Color(160, 160, 160), "StashChestIron");
+        new Color(160, 160, 160), "StashChestIron", StackMultiplier: 4);
 
     public static readonly StashChestTier Diamond = new(
         DiamondChestIndex, "diamond", SlotsCount: 80, Columns: 10, SlotSize: 48f,
-        new Color(80, 160, 240), "StashChestDiamond");
+        new Color(80, 160, 240), "StashChestDiamond", StackMultiplier: 16);
 
     public static readonly StashChestTier View = new(
         ViewChestIndex, "view", SlotsCount: 80, Columns: 10, SlotSize: 48f,
-        new Color(192, 208, 240), "StashChestView");
+        new Color(192, 208, 240), "StashChestView", StackMultiplier: 16);
 
     public static readonly IReadOnlyList<StashChestTier> All = new[] { Copper, Iron, Diamond, View };
 

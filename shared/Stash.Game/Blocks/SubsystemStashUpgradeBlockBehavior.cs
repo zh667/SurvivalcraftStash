@@ -35,13 +35,20 @@ public class SubsystemStashUpgradeBlockBehavior : SubsystemBlockBehavior
             return false;
         }
 
-        int contents = m_terrain.Terrain.GetCellContents(
-            raycastResult.CellFace.X, raycastResult.CellFace.Y, raycastResult.CellFace.Z);
+        int held = componentMiner.Inventory?.GetSlotValue(componentMiner.Inventory.ActiveSlotIndex) ?? 0;
+        int upgradeData = Terrain.ExtractData(held);
 
-        // 只对箱子（原版木箱或我们的分级箱）有反应，其它方块放行给原版逻辑。
-        if (contents != StashChestTiers.VanillaChestIndex && !StashChestTiers.IsStashChest(contents))
+        // 背包升级件作用在身上的背包，指着什么方块都行。
+        if (!StashBackpackUpgrade.IsBackpackUpgrade(upgradeData))
         {
-            return false;
+            int contents = m_terrain.Terrain.GetCellContents(
+                raycastResult.CellFace.X, raycastResult.CellFace.Y, raycastResult.CellFace.Z);
+
+            // 箱子升级件只对箱子（原版木箱或我们的分级箱）有反应，其它方块放行给原版逻辑。
+            if (contents != StashChestTiers.VanillaChestIndex && !StashChestTiers.IsStashChest(contents))
+            {
+                return false;
+            }
         }
 
         return StashUpgradeUse.TryUseUpgradeItem(Project, m_terrain, m_blockEntities, componentMiner, raycastResult);

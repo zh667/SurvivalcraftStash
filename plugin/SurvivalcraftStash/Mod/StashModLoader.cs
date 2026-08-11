@@ -14,6 +14,13 @@ public class StashModLoader : ModLoader
     public override void __ModInitialize()
     {
         StashPlatform.Register(new ScmodStashPlatform());
+
+        // 钩子必须显式注册，否则 override 不会被调用。
+        ModsManager.RegisterHook("OnModalPanelWidgetSet", this);
+        ModsManager.RegisterHook("GuiUpdate", this);
+        ModsManager.RegisterHook("OnProjectLoaded", this);
+        ModsManager.RegisterHook("OnProjectDisposed", this);
+        ModsManager.RegisterHook("ClothingWidgetOpen", this);
         Log.Information($"[Stash] scmod {Version} 已加载");
     }
 

@@ -109,6 +109,28 @@ ContentsMask = 1023, LightShift = 10, DataShift = 14, DataMask = -16384
 
 - **多个包要一个一个注册**：写在同一个 `try` 里的话，第一个撞号抛异常，后面的包会全部漏注册。
 
+## 5.3 第二次实机（同日）暴露的三个坑
+
+- **钩子必须显式注册，否则 override 根本不会被调用。**
+  `ModsManager.HookAction(name, ...)` 只会遍历 `ModHooks[name]` 里注册过的 loader，
+  而注册要自己在 `__ModInitialize` 里写 `ModsManager.RegisterHook("OnModalPanelWidgetSet", this)`。
+  官方示例模组的注释写明了这点（"必须在 __ModInitialize() 方法中注册，否则无效"），我第一版全漏了
+  → 整理按钮、准星预览、世界数据加载全部静默失效，日志里也不会报错。**两个平台都是这样。**
+
+- **联机版 `ClothingWidgetOpen` 是个死钩子**：`ComponentGui` 里派发时传的钩子名是空串
+  （`ModsManager.HookAction("", ...)`，原版写漏了），永远匹配不到任何 loader。
+  插件版传的是正确的 `"ClothingWidgetOpen"`。→ 依赖它的功能在联机版必须另找入口。
+
+- **联机版 `SubsystemTerrain.ChangeCell` 在 `miner == null` 时只调 5 参的 `OnBlockAdded`**：
+  ```csharp
+  if (miner == null) { behaviors[j].OnBlockAdded(value, old, x, y, z); continue; }
+  behaviors[j].OnBlockAdded(value, old, x, y, z);
+  behaviors[j].OnBlockAdded(value, old, x, y, z, miner);
+  ```
+  只覆写 6 参版的话，任何走 `ChangeCell` 的方块替换都不会建方块实体。
+  我们的箱子升级就栽在这里——外观换了、实体没建，于是"提示升级失败 + 新箱子打不开"。**两个重载都要覆写。**
+  另外 `ChangeCell` 自带 territory 校验和 `SubsystemTerrainPackage` 广播，服务端改格子用它就对了。
+
 ## 6. 已知的坑
 
 - 联机版世界文件夹名会被回收复用（见 SCTM 经验）→ 世界侧注册表必须带**种子/世界 GUID 校验**，否则串档。
