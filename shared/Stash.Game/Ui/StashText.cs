@@ -67,6 +67,25 @@ public static class StashText
     public static string UpgradeFailed =>
         UseEnglish ? "Upgrade failed" : "升级失败";
 
+    public static string DrawerName(StashDrawerTier tier) => tier.Key switch
+    {
+        "wood" => UseEnglish ? "Wooden Drawer" : "木抽屉",
+        "copper" => UseEnglish ? "Copper Drawer" : "铜抽屉",
+        "iron" => UseEnglish ? "Iron Drawer" : "铁抽屉",
+        "diamond" => UseEnglish ? "Diamond Drawer" : "钻石抽屉",
+        _ => UseEnglish ? "Drawer" : "抽屉",
+    };
+
+    public static string DrawerStored(int count) =>
+        UseEnglish ? $"Stored {count}" : $"存入 {count} 个";
+
+    public static string DrawerTaken(int count) =>
+        UseEnglish ? $"Took {count}" : $"取出 {count} 个";
+
+    public static string DrawerFull => UseEnglish ? "Drawer is full" : "抽屉满了";
+
+    public static string DrawerEmpty => UseEnglish ? "Drawer is empty" : "抽屉是空的";
+
     public static string Upgraded =>
         UseEnglish ? "Chest upgraded" : "箱子已升级";
 

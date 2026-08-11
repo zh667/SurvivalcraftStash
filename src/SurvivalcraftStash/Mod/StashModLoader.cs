@@ -33,6 +33,8 @@ public class StashModLoader : ModLoader
         Log.Information($"[Stash] netmod {Version} 已加载");
     }
 
+    public override void GuiUpdate(ComponentGui componentGui) => StashAimPreview.Update(componentGui);
+
     public override void OnModalPanelWidgetSet(ComponentGui gui, Widget oldWidget, Widget newWidget) =>
         StashUiInjector.OnModalPanelChanged(gui, oldWidget, newWidget);
 

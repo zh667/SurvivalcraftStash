@@ -60,4 +60,30 @@
     "aaa"
   </Recipe>
 
+
+  <!-- 抽屉：木箱 + 一圈材料；档位越高容量越大 -->
+  <Recipe Result="StashWoodDrawerBlock" ResultCount="1" RequiredHeatLevel="0" a="planks" b="chest" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
+  <Recipe Result="StashCopperDrawerBlock" ResultCount="1" RequiredHeatLevel="0" a="copperingot" b="stashwooddrawer" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
+  <Recipe Result="StashIronDrawerBlock" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="stashcopperdrawer" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
+  <Recipe Result="StashDiamondDrawerBlock" ResultCount="1" RequiredHeatLevel="0" a="diamond" b="stashirondrawer" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
 </Mod>

@@ -18,6 +18,9 @@
     <MemberSubsystemTemplate Name="StashUpgradeBlockBehavior" Guid="3779bd7a-7e00-4ddb-8b64-c6ad866777a9" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
       <Parameter Name="Class" Guid="3e187bf2-bfb3-4747-a075-75b42bf0e6e5" Value="Game.SubsystemStashUpgradeBlockBehavior" Type="string"/>
     </MemberSubsystemTemplate>
+    <MemberSubsystemTemplate Name="StashDrawerBlockBehavior" Guid="c7ae192c-8d39-4da0-a65b-c3c363da8b43" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
+      <Parameter Name="Class" Guid="4b76315f-e473-40c4-b472-8d53cd9daff8" Value="Game.SubsystemStashDrawerBlockBehavior" Type="string"/>
+    </MemberSubsystemTemplate>
   </ProjectTemplate>
   <EntityTemplate Name="StashChestCopper" Guid="08528624-5610-4128-bcb6-1de546cc1c76">
     <MemberComponentTemplate Name="Chest" Guid="fe5dccf1-762f-429c-ab0e-26f5294d5814" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
@@ -46,5 +49,37 @@
       <Parameter Name="SlotsCount" Guid="89306935-abb4-4c99-b86f-add93804d1f0" Value="80" Type="int"/>
     </MemberComponentTemplate>
     <MemberComponentTemplate Name="BlockEntity" Guid="b69fdd4e-03fe-4cf3-a806-772b4e7b5c35" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+  <EntityTemplate Name="StashDrawerWood" Guid="8b9ce2db-4883-43cb-8863-685b786e62f1">
+    <MemberComponentTemplate Name="Chest" Guid="2da1f78d-bd22-4c49-9950-760cc0a99b0b" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
+      <Parameter Name="Class" Guid="4b76901f-0d27-4bc9-ad59-d4576b74e45f" Value="Game.ComponentStashDrawer" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="fad7ac28-b42c-460e-976e-b049f3435d94" Value="1" Type="int"/>
+      <Parameter Name="CapacityInStacks" Guid="db6cf1f3-9fe6-408f-85b3-eb3f35e207ff" Value="64" Type="int"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="13affc94-da32-49c0-a90e-ec07aef81c64" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+  <EntityTemplate Name="StashDrawerCopper" Guid="0c1267c6-473e-4d2a-a4fd-36e87f833a2b">
+    <MemberComponentTemplate Name="Chest" Guid="f5847f4a-9147-43ff-9b8d-0859fe2ac9d5" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
+      <Parameter Name="Class" Guid="eaf2cfaa-ac92-4743-9dfc-becaf1c27adc" Value="Game.ComponentStashDrawer" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="0e40e335-d2f4-4efd-afd9-6edcaca99591" Value="1" Type="int"/>
+      <Parameter Name="CapacityInStacks" Guid="ed9fc642-ec74-4b23-a466-69a217255369" Value="256" Type="int"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="45db8535-c234-4940-b3cd-74bb5d07d4cf" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+  <EntityTemplate Name="StashDrawerIron" Guid="e6e82066-3e88-4d11-a329-7262d90961cf">
+    <MemberComponentTemplate Name="Chest" Guid="59b5f3d5-e1df-4d35-8450-436b9681cfa9" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
+      <Parameter Name="Class" Guid="d8e812c7-4101-4d90-9814-387c717ef65b" Value="Game.ComponentStashDrawer" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="d7ef8f73-7bce-4167-b2f3-6d0d9f095b60" Value="1" Type="int"/>
+      <Parameter Name="CapacityInStacks" Guid="ae90e867-81d8-45c7-b280-b16a4d71640d" Value="1024" Type="int"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="46b4b5a2-43bf-4a03-9a7e-71ffa8389c8d" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+  <EntityTemplate Name="StashDrawerDiamond" Guid="75238138-283c-475c-a69d-5eaa3d84608b">
+    <MemberComponentTemplate Name="Chest" Guid="80b61b89-9550-49a0-bbf7-17af1682a865" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
+      <Parameter Name="Class" Guid="9b1fa2f3-8daf-4fe3-9d6a-25e28a86e46e" Value="Game.ComponentStashDrawer" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="836d2fb0-5a32-46a7-8ed3-c216c348f2b2" Value="1" Type="int"/>
+      <Parameter Name="CapacityInStacks" Guid="06109e7f-458c-4e04-8cfb-0927117312ec" Value="4096" Type="int"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="4b17fcb5-0088-447b-b621-b5da24d98506" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
   </EntityTemplate>
 </Mod>

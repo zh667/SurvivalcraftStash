@@ -39,6 +39,26 @@
       "DisplayName": "Observation Chest Upgrade",
       "Description": "Use on a diamond chest.",
       "CRDescription:0": "Observation Chest Upgrade"
+    },
+    "StashWoodDrawerBlock:0": {
+      "DisplayName": "Wooden Drawer",
+      "Description": "Holds one item type, 64 stacks. Tap with an item to store all of it; tap empty-handed to take one stack.",
+      "CRDescription:0": "Wooden Drawer"
+    },
+    "StashCopperDrawerBlock:0": {
+      "DisplayName": "Copper Drawer",
+      "Description": "Holds one item type, 256 stacks.",
+      "CRDescription:0": "Copper Drawer"
+    },
+    "StashIronDrawerBlock:0": {
+      "DisplayName": "Iron Drawer",
+      "Description": "Holds one item type, 1024 stacks.",
+      "CRDescription:0": "Iron Drawer"
+    },
+    "StashDiamondDrawerBlock:0": {
+      "DisplayName": "Diamond Drawer",
+      "Description": "Holds one item type, 4096 stacks.",
+      "CRDescription:0": "Diamond Drawer"
     }
   }
 }
