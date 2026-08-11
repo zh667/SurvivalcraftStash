@@ -5,9 +5,9 @@
 Inventory Profiles Next（均已反编译研读，见 [docs/MC-REFERENCE.md](docs/MC-REFERENCE.md)），
 但**实现完全按 Survivalcraft 自己的机制来做**——SC 没有 NBT、没有管道、是服务端权威的，照搬只会做出四不像。
 
-> 当前状态：**整理层 / 分级箱子 / 背包 / 抽屉已实现，存储网络未开始**。
-> 两版均可构建，29 个单测通过；但**尚未在真机游戏里跑过**（开发机是 Linux，SC 只跑 Windows/安卓），
-> 所以标注为"待真机验证"。路线与剩余项见 [docs/ROADMAP.md](docs/ROADMAP.md)。
+> 当前状态：**五大支柱都已落地**（整理 / 分级箱子 / 背包 / 抽屉 / 存储网络）。
+> 两版均可构建，45 个单测通过；但**尚未在真机游戏里跑过**（开发机是 Linux，SC 只跑 Windows/安卓），
+> 所以一律标注为"待真机验证"。剩余项与已知偏差见 [docs/ROADMAP.md](docs/ROADMAP.md)。
 
 | 支柱 | 状态 |
 |---|---|
@@ -15,7 +15,7 @@ Inventory Profiles Next（均已反编译研读，见 [docs/MC-REFERENCE.md](doc
 | 分级箱子（铜/铁/钻石/观景 + 原地升级） | ✅ 已实现 |
 | 背包（穿戴式，三档） | ✅ 主体已实现，升级件未做 |
 | 抽屉（四档 + 准星预览） | ✅ 已实现 |
-| 存储网络（枢纽/终端） | ⬜ 未开始 |
+| 存储网络（枢纽 + 终端搜索取放） | ✅ 已实现，自动化件未做 |
 
 ## 计划中的五大支柱
 
@@ -24,7 +24,7 @@ Inventory Profiles Next（均已反编译研读，见 [docs/MC-REFERENCE.md](doc
 | 整理 | 所有库存界面的整理按钮、锁定槽位、记忆槽位、自动补货、一键存入/取出、撤销 | Inventory Profiles Next + Sophisticated 的 memory/nosort |
 | 分级箱子 | 木/铜/铁/钻石/观景 五档（按 SC 真实矿物，原版没有金），升级件原地升级、内容不丢 | Iron Chests |
 | 背包 | 三档可穿戴背包（拖到人身上即穿戴）+ 升级槽（拾取/磁铁/过滤/自动存取/垃圾…） | Sophisticated Backpacks + Core |
-| 存储网络 | 枢纽沿**原版电线**聚合容器、终端搜索取放、合成终端、无线终端、自动化件 | Tom's Simple Storage |
+| 存储网络 | 枢纽把贴着的容器聚成一片、终端搜索取放（合成终端/无线终端待做） | Tom's Simple Storage |
 | 抽屉 | 单品大容量（最高 4096 组）、正面显示数量、接入网络 | Storage Drawers（四个参考模组都没覆盖的空白） |
 
 外加：容器命名与搜索、容器预览 HUD。

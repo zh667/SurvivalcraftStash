@@ -74,6 +74,11 @@
       "DisplayName": "铁扣背包",
       "Description": "穿在身上的背包，32 格。",
       "CRDescription:0": "铁扣背包"
+    },
+    "StashHubBlock:0": {
+      "DisplayName": "存储终端",
+      "Description": "贴着它的箱子、抽屉连成一片网络，点它就能统一搜索、取出、一键存入。最多接管 128 个容器。",
+      "CRDescription:0": "存储终端"
     }
   }
 }

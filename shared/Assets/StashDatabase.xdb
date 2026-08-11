@@ -21,6 +21,9 @@
     <MemberSubsystemTemplate Name="StashDrawerBlockBehavior" Guid="c7ae192c-8d39-4da0-a65b-c3c363da8b43" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
       <Parameter Name="Class" Guid="4b76315f-e473-40c4-b472-8d53cd9daff8" Value="Game.SubsystemStashDrawerBlockBehavior" Type="string"/>
     </MemberSubsystemTemplate>
+    <MemberSubsystemTemplate Name="StashHubBlockBehavior" Guid="f968ed5e-bd7b-4377-8005-2c53218ba20d" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
+      <Parameter Name="Class" Guid="914b9525-ff36-41be-8b5c-46ad2e8a14e1" Value="Game.SubsystemStashHubBlockBehavior" Type="string"/>
+    </MemberSubsystemTemplate>
   </ProjectTemplate>
   <EntityTemplate Name="StashChestCopper" Guid="08528624-5610-4128-bcb6-1de546cc1c76">
     <MemberComponentTemplate Name="Chest" Guid="fe5dccf1-762f-429c-ab0e-26f5294d5814" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">

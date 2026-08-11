@@ -21,6 +21,9 @@ public sealed class StashOpPackage : IPackage
     /// <summary>单个包最多携带的赋值条数，防止被构造成超大包打服务端。</summary>
     public const int MaxAssignments = 512;
 
+    /// <summary>一个包最多涉及多少个容器。终端的一键存入会横跨整片网络，所以要留够。</summary>
+    public const int MaxParts = StashNetworkScanner.MaxContainers + 2;
+
     public byte ID => PackageId;
 
     public Client To { get; set; } = null!;
@@ -66,7 +69,7 @@ public sealed class StashOpPackage : IPackage
     {
         Parts = new List<(int, List<SlotAssignment>)>();
         int partCount = reader.ReadInt32();
-        if (partCount is < 0 or > 8)
+        if (partCount is < 0 or > MaxParts)
         {
             throw new InvalidDataException($"Stash 包的容器数量非法：{partCount}");
         }

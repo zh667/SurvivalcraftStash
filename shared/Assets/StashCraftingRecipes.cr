@@ -106,4 +106,12 @@
     "aba"
   </Recipe>
 
+
+  <!-- 存储终端：贴着它的容器连成一片，点它统一检索取放 -->
+  <Recipe Result="StashHubBlock" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="chest" c="diamond" Description="[0]">
+    "aca"
+    "aba"
+    "aaa"
+  </Recipe>
+
 </Mod>

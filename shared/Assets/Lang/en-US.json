@@ -74,6 +74,11 @@
       "DisplayName": "Ironbound Backpack",
       "Description": "A worn backpack with 32 slots.",
       "CRDescription:0": "Ironbound Backpack"
+    },
+    "StashHubBlock:0": {
+      "DisplayName": "Storage Terminal",
+      "Description": "Chests and drawers touching it form one network; tap to search, take and deposit across all of them. Up to 128 containers.",
+      "CRDescription:0": "Storage Terminal"
     }
   }
 }

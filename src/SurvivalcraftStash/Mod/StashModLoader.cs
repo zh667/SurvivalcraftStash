@@ -22,6 +22,7 @@ public class StashModLoader : ModLoader
         {
             PackageManager.RegisterPackage(new StashOpPackage());
             PackageManager.RegisterPackage(new StashOpenChestPackage());
+            PackageManager.RegisterPackage(new StashOpenTerminalPackage());
         }
         catch (Exception exception)
         {

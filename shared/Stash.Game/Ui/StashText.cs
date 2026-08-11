@@ -80,6 +80,22 @@ public static class StashText
 
     public static string OpenBackpack => UseEnglish ? "Backpack" : "背包";
 
+    public static string HubName => UseEnglish ? "Storage Terminal" : "存储终端";
+
+    public static string TerminalStatus(int containers, int kinds, int page, int pages) => UseEnglish
+        ? $"{containers} containers · {kinds} kinds · page {page}/{pages}"
+        : $"{containers} 个容器 · {kinds} 种物品 · 第 {page}/{pages} 页";
+
+    public static Func<int, string> TerminalTaken => count => UseEnglish ? $"Took {count}" : $"取出 {count} 个";
+
+    public static Func<int, string> TerminalStored => count => UseEnglish ? $"Stored {count}" : $"存入 {count} 个";
+
+    public static string TerminalNoRoom => UseEnglish ? "No room in your inventory" : "背包装不下了";
+
+    public static string TerminalFull => UseEnglish ? "Nothing could be stored" : "没有能存进去的东西";
+
+    public static string HubEmpty => UseEnglish ? "No containers connected" : "枢纽旁边没有连着容器";
+
     public static string DrawerName(StashDrawerTier tier) => tier.Key switch
     {
         "wood" => UseEnglish ? "Wooden Drawer" : "木抽屉",
