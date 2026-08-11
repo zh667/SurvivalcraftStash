@@ -15,7 +15,7 @@ ContentsMask = 1023, LightShift = 10, DataShift = 14, DataMask = -16384
 槽位 = `(int Value, int Count)`（`ComponentInventoryBase.Slot`）。
 
 > **关键推论**：SC 没有 MC 的 NBT。物品**无法自带任意负载**。
-> 任何"物品内部装东西"（背包、末影箱绑定、抽屉物品）都必须走
+> 任何"物品内部装东西"（可转手的储物袋等）都必须走
 > **data 位存 ID + 世界侧注册表存内容** 的路子。18 bit = 262143 个可用 ID，够用。
 > 这不是发明：原版家具（FurnitureDesign 下标）、颜料/染色都用 data 位做同样的事。
 
@@ -51,9 +51,10 @@ ContentsMask = 1023, LightShift = 10, DataShift = 14, DataMask = -16384
 | UI 注入钩子 | `OnWidgetConstruct` / `OnModalPanelWidgetSet` / `GuiUpdate` | 以上全有，另有 `OnWidgetContentsLoaded` 等更多钩子 |
 | 方块索引池 | 1024 个，原版占 258 个（0~263） | 同 |
 
-> **关键推论**：**贴图能力是两版最大的差异**。插件版可以做漂亮的分级箱子；
-> 联机版要么复用原版图集槽位（视觉靠命名 + UI 区分），要么可选地替换整张 `Textures/Blocks`（与材质包/其他 Mod 冲突）。
-> 待验证项：解码 `Content.zip → Assets/Textures/Blocks.webp`，数清 256 格里还有多少空格。
+> **关键推论（已按 5.1 的发现修正）**：贴图差异一度看起来是两版最大的鸿沟，
+> 但两条路绕开了它——分级方块用**染色**（复用原版贴图 × 色调），背包做成**衣物**（衣物贴图本来就独立于图集）。
+> 所以"替换整张 `Textures/Blocks`"的方案作废：世界设置里的「方块贴图」（`.scbtex` 材质包）
+> 会让 `SubsystemBlocksTexture` 直接加载玩家选的那张整图，我们塞进去的格子会全部失效。
 
 ## 5. 其它可用的原版机制
 
@@ -63,8 +64,34 @@ ContentsMask = 1023, LightShift = 10, DataShift = 14, DataMask = -16384
 - **电路**：`IElectricElementBlock` + `SubsystemElectricity.GetAllConnectedNeighbors` —— 原版电线已经有一套连通图。存储网络可以**直接跑在原版电线上**，不用发明管道，也不用新贴图。
 - **持久化**：世界目录 JSON（`Storage.CombinePaths(GameInfo.DirectoryName, "...")`，SurvivalcraftRuins 已验证）+ 方块实体自己的 `ValuesDictionary`。
 
+## 5.1 后续核实补充的事实（都影响了设计取舍）
+
+- **SC 原版没有金**。`BlocksData.txt` 里不存在任何 `Gold*` 条目；可用金属/宝石只有
+  煤、铜（孔雀石 `MalachiteChunkBlock` 冶炼成 `CopperIngotBlock`）、铁、硫磺、硝石、锗、钻石。
+  → 分级箱子的材料链必须重排，没有"金箱"这一档。
+- **染色渲染是现成的**：`PaintedCubeBlock.GenerateTerrainVertices / DrawBlock` 就是
+  "同一张图集贴图 × 一个 `Color`"。`GenerateCubeVertices` 接受任意颜色（原版只是恰好从 16 色调色板取色）。
+  → 分级方块可以完全复用原版贴图，用色调区分，**两版一致、零图集冲突**，不再需要图集扩展包。
+- **实测原版图集色值**（`Content.zip → Assets/Textures/Blocks.webp`，512×512、16×16 格、每格 32px，
+  用 Engine.dll 的 `Image.Load` 解码后取众数色）：
+  箱子木色 `#806030`、铁锭 `#A0A0A0`、铜锭 `#C0B0A0`、钻石块 `#50A0F0`、玻璃 `#C0D0F0`、
+  孔雀石方块 `#30B090`、煤方块 `#101010`。
+- **`MaxStacking` 是 `BlocksData.txt` 的一列**（第 38 列）：普通方块 40、钻石 4、
+  **工具 / 衣服 / 箱子 = 1**。耐久值本身存在 data 位里，用过的工具和新工具是不同的 value，本就不会合并。
+  → "抽屉只收可堆叠物品"这条规则不需要额外实现，照着 `MaxStacking > 1` 判断即可。
+- **衣物不走方块图集**：`Clothes.xml` 每条 `ClothingData` 自带 `TextureName="Textures/Clothing/..."`，
+  是独立 `Texture2D`；所有衣物共用 `ClothingBlock`（索引 203）一个方块索引，靠 data 区分类型/耐久/颜色。
+  → 背包做成衣物：**联机版也能有独立贴图，且不占方块索引**。代价是 data 位放不下实例 ID。
+- **衣物槽就是普通库存槽**：`ClothingWidget` 用的是 `InventorySlotWidget.AssignInventorySlot(ComponentClothing, i)`，
+  且每个槽存的是 `List<int>`（可叠穿多层）。→ 拖到人物身上穿戴、拖出来脱下，**原版白送**。
+- **衣物只换贴图不换几何**：`ComponentOuterClothingModel` 用一套固定人形网格（Leg1/Leg2/Body/Head）。
+  想让背包在人物背上"鼓出来"，只能用 `OnModelRendererDrawExtra` 自己挂模型。
+- **图鉴（帮助 → 合成配方）自动收录**：`RecipaediaScreen` 按 `BlocksManager.Categories` +
+  各方块 `GetCreativeValues()` 列条目，`RecipaediaRecipesScreen` 按 `ResultValue` 取配方。
+  只要类别、创造值、`.cr` 三者对上就会出现，不需要额外代码。原版箱子的类别是 `Items`。
+
 ## 6. 已知的坑
 
 - 联机版世界文件夹名会被回收复用（见 SCTM 经验）→ 世界侧注册表必须带**种子/世界 GUID 校验**，否则串档。
 - `AddNetSlotItems` 在"槽位已有不同物品"或"超过容量"时返回 false 而不是部分插入 → 自己实现插入要处理部分插入。
-- 创造模式可复制物品栈：背包 ID 存在 data 位，**同 ID 多份**必须在打开时做写时复制（split-on-open），否则两个背包共享一份内容。
+- 创造模式可复制物品栈：将来做 B 方案储物袋时，实例 ID 存在 data 位，**同 ID 多份**必须在打开时做写时复制（split-on-open），否则两个袋子共享一份内容。（A 方案的背包按玩家索引，没有这个问题。）

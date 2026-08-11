@@ -13,12 +13,12 @@ Inventory Profiles Next（均已反编译研读，见 [docs/MC-REFERENCE.md](doc
 | 支柱 | 内容 | 灵感来源 |
 |---|---|---|
 | 整理 | 所有库存界面的整理按钮、锁定槽位、记忆槽位、自动补货、一键存入/取出、撤销 | Inventory Profiles Next + Sophisticated 的 memory/nosort |
-| 分级箱子 | 铜/铁/金/钻石/水晶 五档，升级件原地升级、内容与命名不丢 | Iron Chests |
-| 背包 | 三档背包物品 + 升级槽（拾取/磁铁/过滤/堆叠/自动存取/垃圾…），放地上即箱子 | Sophisticated Backpacks + Core |
+| 分级箱子 | 木/铜/铁/钻石/观景 五档（按 SC 真实矿物，原版没有金），升级件原地升级、内容不丢 | Iron Chests |
+| 背包 | 三档可穿戴背包（拖到人身上即穿戴）+ 升级槽（拾取/磁铁/过滤/自动存取/垃圾…） | Sophisticated Backpacks + Core |
 | 存储网络 | 枢纽沿**原版电线**聚合容器、终端搜索取放、合成终端、无线终端、自动化件 | Tom's Simple Storage |
-| 抽屉 | 单品大容量、正面显示、接入网络 | Storage Drawers（四个参考模组都没覆盖的空白） |
+| 抽屉 | 单品大容量（最高 4096 组）、正面显示数量、接入网络 | Storage Drawers（四个参考模组都没覆盖的空白） |
 
-外加：绑定箱（末影箱式跨地点共享）、容器命名与搜索、容器预览 HUD、死亡遗物箱。
+外加：容器命名与搜索、容器预览 HUD。
 
 ## 两个版本
 
@@ -26,7 +26,7 @@ Inventory Profiles Next（均已反编译研读，见 [docs/MC-REFERENCE.md](doc
 |---|---|---|
 | 目标 | Survivalcraft 联机版，NetMod API `1.44` | SurvivalcraftApi `1.9.2.1` |
 | 工程 | `src/SurvivalcraftStash` | `plugin/SurvivalcraftStash` |
-| 特有能力 | 服务端权威执行、自定义网络包 | 逐方块自定义贴图、自定义衣物槽（背包可穿戴）、Harmony |
+| 特有能力 | 服务端权威执行、自定义网络包 | 逐方块自定义贴图、自定义衣物槽、Harmony |
 
 两版共用 `shared/` 下的核心代码（**编译进两边**，不是各存一份），能力差异用降级策略处理，
 完整对照见 [docs/DESIGN.md](docs/DESIGN.md) 的能力矩阵。

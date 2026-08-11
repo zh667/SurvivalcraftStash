@@ -97,10 +97,8 @@ CUSTOM 走一套 ANTLR 规则 DSL（`gen/RulesParser`），支持按类别、标
 
 1. **Storage Drawers（抽屉）** —— 四个模组都没覆盖"单品超大容量 + 一眼看清"。
    SC 的槽位天然就是 (value, count)，抽屉几乎零成本，且能和存储网络串起来。**建议纳入 v1 规划**。
-2. **Ender Storage（末影箱/绑定箱）** —— 联机版尤其刚需：跨地点共享同一份内容，用染料/颜色编码配对。
-   我们已经有"ID 在 data 位 + 世界注册表"的地基，实现代价极低。**建议纳入 v1**。
-3. **死亡墓碑（Corail Tombstone / Gravestone）** —— 死亡时把物品收进一个墓碑箱而不是撒一地。
-   与用户已有的 SCTM 死亡标记天然联动。**建议 v1.x**。
+2. ~~Ender Storage（末影箱/绑定箱）~~ —— 已决定不做：外出冒险靠背包解决，不需要跨地点通道。
+3. ~~死亡墓碑（Corail Tombstone / Gravestone）~~ —— 已决定不做。
 4. **Chest Transporter（整箱搬运）** —— 带内容搬箱子；分级箱子做出来之后代价很小。
 5. **Refined Storage / AE2 的按需自动合成** —— 存储网络的天花板，但工作量最大，放 v2。
 6. **Quark / Inventory Tweaks 的交互糖** —— 双击补满、shift 一键存入、拖拽扫过多格。
