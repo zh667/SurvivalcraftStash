@@ -55,9 +55,17 @@ dotnet build src/SurvivalcraftStash/SurvivalcraftStash.csproj -p:SurvivalcraftDi
 dotnet build plugin/SurvivalcraftStash/SurvivalcraftStash.csproj
 ```
 
+打包产物统一落在 `artifacts/`：
+
+```
+artifacts/SurvivalcraftStash.netmod   → 联机版游戏目录的 NetMods 文件夹
+artifacts/SurvivalcraftStash.scmod    → 插件版游戏目录的 Mods 文件夹
+```
+
 ## 目录
 
 ```
+artifacts/  构建出来的 .netmod / .scmod（不入库）
 docs/       设计与调研（平台事实 / 参考模组笔记 / 设计 / 路线图）
 shared/     Stash.Shared（纯逻辑，可单测）、Stash.Game（依赖游戏但两版通用）
 src/        联机版 netmod

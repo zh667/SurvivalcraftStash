@@ -28,8 +28,10 @@
 
   <Target Name="PackScmod" AfterTargets="PostBuildEvent">
     <PropertyGroup>
-      <PathOfScmod>$(TargetDir)..\$(AssemblyName).scmod</PathOfScmod>
+      <ArtifactsDir>$(MSBuildProjectDirectory)/../../artifacts/</ArtifactsDir>
+      <PathOfScmod>$(ArtifactsDir)$(AssemblyName).scmod</PathOfScmod>
     </PropertyGroup>
+    <MakeDir Directories="$(ArtifactsDir)" />
     <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PathOfScmod)" Overwrite="true" />
     <Message Text="已打包 scmod: $(PathOfScmod)" Importance="high" />
   </Target>

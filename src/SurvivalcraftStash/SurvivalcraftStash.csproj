@@ -52,8 +52,10 @@
   </ItemGroup>
   <Target Name="PackNetmod" AfterTargets="PostBuildEvent">
     <PropertyGroup>
-      <PathOfNetmod>$(TargetDir)..\$(AssemblyName).netmod</PathOfNetmod>
+      <ArtifactsDir>$(MSBuildProjectDirectory)/../../artifacts/</ArtifactsDir>
+      <PathOfNetmod>$(ArtifactsDir)$(AssemblyName).netmod</PathOfNetmod>
     </PropertyGroup>
+    <MakeDir Directories="$(ArtifactsDir)" />
     <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PathOfNetmod)" Overwrite="true" />
     <Message Text="已打包 netmod: $(PathOfNetmod)" Importance="high" />
   </Target>
