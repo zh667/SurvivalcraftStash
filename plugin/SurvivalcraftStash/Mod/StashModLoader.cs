@@ -1,11 +1,11 @@
 using Engine;
+using GameEntitySystem;
+using Stash.Game;
 
 namespace Game;
 
 /// <summary>
 /// 插件版（scmod，SurvivalcraftApi 1.9.2.1）入口。
-/// 现阶段只做加载自检。插件版独有的能力（自定义方块贴图、自定义衣物槽、Harmony）
-/// 在对应里程碑接入，见 docs/DESIGN.md 的能力矩阵。
 /// </summary>
 public class StashModLoader : ModLoader
 {
@@ -13,6 +13,28 @@ public class StashModLoader : ModLoader
 
     public override void __ModInitialize()
     {
+        StashPlatform.Register(new ScmodStashPlatform());
         Log.Information($"[Stash] scmod {Version} 已加载");
+    }
+
+    public override void OnModalPanelWidgetSet(ComponentGui componentGui, Widget oldWidget, Widget newWidget) =>
+        StashUiInjector.OnModalPanelChanged(componentGui, oldWidget, newWidget);
+
+    public override void OnProjectLoaded(Project project)
+    {
+        SubsystemGameInfo? gameInfo = project?.FindSubsystem<SubsystemGameInfo>();
+        if (gameInfo != null)
+        {
+            StashStore.Load(gameInfo);
+        }
+
+        StashUiInjector.Reset();
+    }
+
+    public override void OnProjectDisposed()
+    {
+        StashStore.Save();
+        StashStore.Unload();
+        StashUiInjector.Reset();
     }
 }

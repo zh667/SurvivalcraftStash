@@ -1,21 +1,70 @@
 using Engine;
+using Game.NetWork;
+using GameEntitySystem;
+using Stash.Game;
 
 namespace Game;
 
 /// <summary>
 /// 联机版（netmod）入口。
-/// 现阶段只做加载自检：确认程序集能被 ModsManager 装起来、共享层可用。
-/// 功能按 docs/ROADMAP.md 的里程碑逐步接进来。
 /// </summary>
 public class StashModLoader : ModLoader
 {
     public const string Version = "0.1.0";
 
+    private static readonly NetmodStashPlatform s_platform = new();
+
     public override void __ModInitialize()
     {
-        Log.Information($"[Stash] netmod {Version} 已加载");
+        StashPlatform.Register(s_platform);
 
-        // M1 起：在这里注册自定义包（PackageManager.RegisterPackage），
-        //        并在 OnWidgetConstruct / OnModalPanelWidgetSet 里注入整理按钮。
+        try
+        {
+            PackageManager.RegisterPackage(new StashOpPackage());
+        }
+        catch (Exception exception)
+        {
+            // 包号被别的 Mod 占了。单人/主机侧仍然完全可用，只有作为客户端连别人服务器时不可用。
+            s_platform.PackageAvailable = false;
+            Log.Warning($"[Stash] 数据包注册失败（可能与其他 Mod 撞号）：{exception.Message}");
+        }
+
+        Log.Information($"[Stash] netmod {Version} 已加载");
+    }
+
+    public override void OnModalPanelWidgetSet(ComponentGui gui, Widget oldWidget, Widget newWidget) =>
+        StashUiInjector.OnModalPanelChanged(gui, oldWidget, newWidget);
+
+    public override void OnLoadingFinished(List<Action> actions)
+    {
+        actions.Add(() =>
+        {
+            SubsystemGameInfo? gameInfo = GameManager.Project?.FindSubsystem<SubsystemGameInfo>();
+            if (gameInfo != null)
+            {
+                StashStore.Load(gameInfo);
+                StashUiInjector.Reset();
+            }
+        });
+
+        // 联机版的 ModLoader 没有"世界保存"钩子，所以退出世界时收尾。
+        // 平时的改动（锁定槽位等）在改的时候就落盘，文件很小，代价可以忽略。
+        GameManager.ProjectDisposed -= OnProjectDisposed;
+        GameManager.ProjectDisposed += OnProjectDisposed;
+    }
+
+    private static void OnProjectDisposed(Project project)
+    {
+        StashStore.Save();
+        StashStore.Unload();
+        StashUiInjector.Reset();
+    }
+
+    public override void ModDispose()
+    {
+        GameManager.ProjectDisposed -= OnProjectDisposed;
+        StashStore.Save();
+        StashStore.Unload();
+        StashUiInjector.Reset();
     }
 }
