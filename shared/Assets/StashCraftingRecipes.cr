@@ -28,13 +28,6 @@
     "aaa"
   </Recipe>
 
-  <!-- 升级件：钻石→观景（玻璃换面板，看得见里面） -->
-  <Recipe Result="StashChestUpgradeBlock:3" ResultCount="1" RequiredHeatLevel="0" a="glass" b="diamond" Description="[0]">
-    "aaa"
-    "aba"
-    "aaa"
-  </Recipe>
-
   <!-- 直接合成各档箱子：箱子 + 一圈对应材料 -->
   <Recipe Result="StashCopperChestBlock" ResultCount="1" RequiredHeatLevel="0" a="copperingot" b="chest" Description="[0]">
     "aaa"
@@ -49,12 +42,6 @@
   </Recipe>
 
   <Recipe Result="StashDiamondChestBlock" ResultCount="1" RequiredHeatLevel="0" a="diamond" b="stashironchest" Description="[0]">
-    "aaa"
-    "aba"
-    "aaa"
-  </Recipe>
-
-  <Recipe Result="StashViewChestBlock" ResultCount="1" RequiredHeatLevel="0" a="glass" b="stashdiamondchest" Description="[0]">
     "aaa"
     "aba"
     "aaa"
@@ -84,6 +71,14 @@
 
   <!-- 存储终端：贴着它的容器连成一片，点它统一检索取放 -->
   <Recipe Result="StashHubBlock" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="chest" c="diamond" Description="[0]">
+    "aca"
+    "aba"
+    "aaa"
+  </Recipe>
+
+
+  <!-- 无线终端：拿它右键一个存储终端就绑定，之后对着空处右键远程打开 -->
+  <Recipe Result="StashWirelessTerminalBlock" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="diamond" c="germaniumchunk" Description="[0]">
     "aca"
     "aba"
     "aaa"

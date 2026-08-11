@@ -21,6 +21,9 @@
     <MemberSubsystemTemplate Name="StashHubBlockBehavior" Guid="f968ed5e-bd7b-4377-8005-2c53218ba20d" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
       <Parameter Name="Class" Guid="914b9525-ff36-41be-8b5c-46ad2e8a14e1" Value="Game.SubsystemStashHubBlockBehavior" Type="string"/>
     </MemberSubsystemTemplate>
+    <MemberSubsystemTemplate Name="StashWirelessBlockBehavior" Guid="21675118-d36b-4471-9599-fa1b853fae6e" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
+      <Parameter Name="Class" Guid="59d634a0-661f-4e28-8b99-aec5ec6eecb4" Value="Game.SubsystemStashWirelessBlockBehavior" Type="string"/>
+    </MemberSubsystemTemplate>
   </ProjectTemplate>
   <EntityTemplate Name="StashChestCopper" Guid="08528624-5610-4128-bcb6-1de546cc1c76">
     <MemberComponentTemplate Name="Chest" Guid="fe5dccf1-762f-429c-ab0e-26f5294d5814" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
@@ -45,14 +48,6 @@
       <Parameter Name="StackMultiplier" Guid="11195508-29a8-4394-9d05-878c15746988" Value="16" Type="int"/>
     </MemberComponentTemplate>
     <MemberComponentTemplate Name="BlockEntity" Guid="567ba85a-4f02-4fa1-9238-bd81c85fbed2" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
-  </EntityTemplate>
-  <EntityTemplate Name="StashChestView" Guid="efae538f-cf4b-45e0-807c-14061a4c7b93">
-    <MemberComponentTemplate Name="Chest" Guid="ea70774e-068c-4d47-892b-bc53fca496a9" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
-      <Parameter Name="Class" Guid="6e890da9-ad5e-417a-a50a-8564fd8aea7d" Value="Game.ComponentStashChest" Type="string"/>
-      <Parameter Name="SlotsCount" Guid="89306935-abb4-4c99-b86f-add93804d1f0" Value="80" Type="int"/>
-      <Parameter Name="StackMultiplier" Guid="172d3a62-543d-43eb-aa3f-6acf14e6b019" Value="16" Type="int"/>
-    </MemberComponentTemplate>
-    <MemberComponentTemplate Name="BlockEntity" Guid="b69fdd4e-03fe-4cf3-a806-772b4e7b5c35" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
   </EntityTemplate>
   <!-- 随身背包：挂在玩家实体上，存档与联机同步都由原版负责 -->
   <EntityTemplate Name="Player" Guid="4be6c1c5-d65d-4537-8a8b-a391969e6dc2">

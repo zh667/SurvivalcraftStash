@@ -15,7 +15,7 @@ public static class StashHubCore
         return StashNetworkScanner.ToInventories(StashNetworkScanner.Scan(terrain, blockEntities, hub));
     }
 
-    public static bool OpenTerminal(ComponentPlayer player, List<IInventory> containers)
+    public static bool OpenTerminal(ComponentPlayer player, List<IInventory> containers, string? title = null)
     {
         if (player?.ComponentGui == null)
         {
@@ -28,7 +28,7 @@ public static class StashHubCore
             return true;
         }
 
-        player.ComponentGui.ModalPanelWidget = new StashTerminalWidget(player, containers);
+        player.ComponentGui.ModalPanelWidget = new StashTerminalWidget(player, containers, title ?? StashText.HubName);
         AudioManager.PlaySound("Audio/UI/ButtonClick", 1f, 0f, 0f);
         return true;
     }

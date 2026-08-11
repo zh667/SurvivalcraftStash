@@ -10,7 +10,6 @@ public static class StashText
 
     public static string Sort => UseEnglish ? "Sort" : "整理";
 
-    public static string SortBackpack => UseEnglish ? "SortInv" : "整背包";
 
     public static string Deposit => UseEnglish ? "Put" : "存入";
 
@@ -45,7 +44,6 @@ public static class StashText
         "copper" => UseEnglish ? "Copper Chest" : "铜箱",
         "iron" => UseEnglish ? "Iron Chest" : "铁箱",
         "diamond" => UseEnglish ? "Diamond Chest" : "钻石箱",
-        "view" => UseEnglish ? "Observation Chest" : "观景箱",
         _ => UseEnglish ? "Chest" : "箱子",
     };
 
@@ -54,7 +52,6 @@ public static class StashText
         0 => UseEnglish ? "Copper Chest Upgrade" : "铜箱升级件",
         1 => UseEnglish ? "Iron Chest Upgrade" : "铁箱升级件",
         2 => UseEnglish ? "Diamond Chest Upgrade" : "钻石箱升级件",
-        3 => UseEnglish ? "Observation Chest Upgrade" : "观景箱升级件",
         4 => UseEnglish ? "Leather Backpack Upgrade" : "皮革背包升级件",
         5 => UseEnglish ? "Ironbound Backpack Upgrade" : "铁扣背包升级件",
         _ => UseEnglish ? "Upgrade Kit" : "升级件",
@@ -85,12 +82,43 @@ public static class StashText
 
     public static string OpenBackpack => UseEnglish ? "Backpack" : "背包";
 
-    public static string ChestEmpty(StashChestTier tier) =>
-        UseEnglish ? $"{ChestName(tier)} · empty" : $"{ChestName(tier)} · 空的";
 
-    public static string ChestSummary(StashChestTier tier, int usedSlots, int totalSlots, long items) => UseEnglish
-        ? $"{ChestName(tier)} · {usedSlots}/{totalSlots} slots · {items} items"
-        : $"{ChestName(tier)} · {usedSlots}/{totalSlots} 格 · 共 {items} 个";
+
+    /// <summary>大数缩写：终端里一格可能有十几万个，原样显示会撑破格子。</summary>
+    public static string FormatCount(long count)
+    {
+        if (count < 10_000)
+        {
+            return count.ToString();
+        }
+
+        return count < 1_000_000
+            ? (count / 1000f).ToString("0.#") + "k"
+            : (count / 1_000_000f).ToString("0.##") + "M";
+    }
+
+    public static string Search => UseEnglish ? "Search" : "搜索";
+
+    public static string ClearSearch => UseEnglish ? "Clear" : "清除";
+
+    public static string SearchHint => UseEnglish ? "(all items)" : "（全部物品）";
+
+    public static string DefaultHubName(int id) => UseEnglish ? $"Storage Terminal {id}" : $"存储终端{id}";
+
+    public static string WirelessTerminalUnbound =>
+        UseEnglish ? "Wireless Terminal (unbound)" : "无线终端（未绑定）";
+
+    public static string WirelessTerminalBound(string hubName) =>
+        UseEnglish ? $"Wireless Terminal → {hubName}" : $"{hubName}的远程终端";
+
+    public static string WirelessBoundTo(string hubName) =>
+        UseEnglish ? $"Bound to {hubName}" : $"已绑定到{hubName}";
+
+    public static string WirelessNotBound =>
+        UseEnglish ? "Bind it by using it on a storage terminal first" : "先拿它右键一个存储终端来绑定";
+
+    public static string WirelessHubGone =>
+        UseEnglish ? "That storage terminal is gone" : "绑定的存储终端已经不在了";
 
     public static string HubName => UseEnglish ? "Storage Terminal" : "存储终端";
 

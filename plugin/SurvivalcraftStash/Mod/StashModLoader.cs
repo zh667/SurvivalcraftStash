@@ -17,7 +17,6 @@ public class StashModLoader : ModLoader
 
         // 钩子必须显式注册，否则 override 不会被调用。
         ModsManager.RegisterHook("OnModalPanelWidgetSet", this);
-        ModsManager.RegisterHook("GuiUpdate", this);
         ModsManager.RegisterHook("OnProjectLoaded", this);
         ModsManager.RegisterHook("OnProjectDisposed", this);
         ModsManager.RegisterHook("ClothingWidgetOpen", this);
@@ -26,8 +25,6 @@ public class StashModLoader : ModLoader
 
     public override void ClothingWidgetOpen(ComponentGui componentGui, ClothingWidget clothingWidget) =>
         StashClothingButton.Attach(componentGui, clothingWidget);
-
-    public override void GuiUpdate(ComponentGui componentGui) => StashAimPreview.Update(componentGui);
 
     public override void OnModalPanelWidgetSet(ComponentGui componentGui, Widget oldWidget, Widget newWidget) =>
         StashUiInjector.OnModalPanelChanged(componentGui, oldWidget, newWidget);

@@ -11,6 +11,9 @@ public class SubsystemStashHubBlockBehavior : SubsystemBlockBehavior
 {
     public override int[] HandledBlocks => new[] { StashHubBlock.Index };
 
+    public override void OnBlockRemoved(int value, int newValue, int x, int y, int z) =>
+        StashHubNaming.Forget(new Point3(x, y, z));
+
     public override bool OnInteract(TerrainRaycastResult raycastResult, ComponentMiner componentMiner)
     {
         if (Terrain.ExtractContents(raycastResult.Value) != StashHubBlock.Index)
@@ -31,6 +34,9 @@ public class SubsystemStashHubBlockBehavior : SubsystemBlockBehavior
             return true;
         }
 
-        return StashHubCore.OpenTerminal(componentMiner.ComponentPlayer, StashHubCore.ScanInventories(Project, point));
+        var record = StashHubNaming.Register(point);
+        StashStore.Save();
+        return StashHubCore.OpenTerminal(
+            componentMiner.ComponentPlayer, StashHubCore.ScanInventories(Project, point), record.Name);
     }
 }

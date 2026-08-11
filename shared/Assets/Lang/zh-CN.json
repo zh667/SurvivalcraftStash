@@ -15,11 +15,6 @@
       "Description": "80 格的箱子。",
       "CRDescription:0": "钻石箱"
     },
-    "StashViewChestBlock:0": {
-      "DisplayName": "观景箱",
-      "Description": "80 格，面板换成玻璃。",
-      "CRDescription:0": "观景箱"
-    },
     "StashChestUpgradeBlock:0": {
       "DisplayName": "铜箱升级件",
       "Description": "拿着它对木箱使用，就地升级成铜箱，里面的东西不会掉出来。",
@@ -34,11 +29,6 @@
       "DisplayName": "钻石箱升级件",
       "Description": "拿着它对铁箱使用。",
       "CRDescription:0": "钻石箱升级件"
-    },
-    "StashChestUpgradeBlock:3": {
-      "DisplayName": "观景箱升级件",
-      "Description": "拿着它对钻石箱使用。",
-      "CRDescription:0": "观景箱升级件"
     },
     "StashHubBlock:0": {
       "DisplayName": "存储终端",
@@ -69,6 +59,11 @@
       "DisplayName": "铁扣背包升级件",
       "Description": "拿着它对身上穿的皮革背包使用。",
       "CRDescription:0": "铁扣背包升级件"
+    },
+    "StashWirelessTerminalBlock:0": {
+      "DisplayName": "无线终端",
+      "Description": "拿着它右键一个存储终端即可绑定，之后对着空处右键就能远程打开那个终端。绑定后名字会变成「存储终端N的远程终端」。",
+      "CRDescription:0": "无线终端"
     }
   }
 }

@@ -15,11 +15,6 @@
       "Description": "A chest with 80 slots.",
       "CRDescription:0": "Diamond Chest"
     },
-    "StashViewChestBlock:0": {
-      "DisplayName": "Observation Chest",
-      "Description": "80 slots behind a glass panel.",
-      "CRDescription:0": "Observation Chest"
-    },
     "StashChestUpgradeBlock:0": {
       "DisplayName": "Copper Chest Upgrade",
       "Description": "Use on a wooden chest to upgrade it in place, keeping its contents.",
@@ -34,11 +29,6 @@
       "DisplayName": "Diamond Chest Upgrade",
       "Description": "Use on an iron chest.",
       "CRDescription:0": "Diamond Chest Upgrade"
-    },
-    "StashChestUpgradeBlock:3": {
-      "DisplayName": "Observation Chest Upgrade",
-      "Description": "Use on a diamond chest.",
-      "CRDescription:0": "Observation Chest Upgrade"
     },
     "StashHubBlock:0": {
       "DisplayName": "Storage Terminal",
@@ -69,6 +59,11 @@
       "DisplayName": "Ironbound Backpack Upgrade",
       "Description": "Use while wearing a leather backpack.",
       "CRDescription:0": "Ironbound Backpack Upgrade"
+    },
+    "StashWirelessTerminalBlock:0": {
+      "DisplayName": "Wireless Terminal",
+      "Description": "Use it on a storage terminal to bind, then use it anywhere to open that terminal remotely.",
+      "CRDescription:0": "Wireless Terminal"
     }
   }
 }

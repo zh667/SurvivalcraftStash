@@ -30,25 +30,56 @@ public class SubsystemStashUpgradeBlockBehavior : SubsystemBlockBehavior
 
     public override bool OnUse(Ray3 ray, ComponentMiner componentMiner)
     {
+        IInventory inventory = componentMiner.Inventory;
+        if (inventory == null)
+        {
+            return false;
+        }
+
+        int activeSlot = inventory.ActiveSlotIndex;
+        int held = inventory.GetSlotValue(activeSlot);
+        if (Terrain.ExtractContents(held) != StashChestTiers.UpgradeItemIndex)
+        {
+            return false;
+        }
+
+        int upgradeData = Terrain.ExtractData(held);
+
+        // 背包升级件作用在身上穿的背包，**不需要指着任何方块**——对着天也能用。
+        // 之前先做 raycast 再判断，对空使用直接就 return false 了，玩家会觉得"升级件没反应"。
+        if (StashBackpackUpgrade.IsBackpackUpgrade(upgradeData))
+        {
+            if (StashPlatform.IsReady && !StashPlatform.Current.IsAuthoritative)
+            {
+                return true;
+            }
+
+            if (!StashBackpackUpgrade.TryUpgradeWorn(componentMiner.ComponentPlayer, upgradeData, out bool upgraded))
+            {
+                return false;
+            }
+
+            if (upgraded)
+            {
+                inventory.RemoveSlotItems(activeSlot, 1);
+                AudioManager.PlaySound("Audio/UI/ButtonClick", 1f, 0f, 0f);
+            }
+
+            return true;
+        }
+
         if (componentMiner.Raycast(ray, RaycastMode.Interaction) is not TerrainRaycastResult raycastResult)
         {
             return false;
         }
 
-        int held = componentMiner.Inventory?.GetSlotValue(componentMiner.Inventory.ActiveSlotIndex) ?? 0;
-        int upgradeData = Terrain.ExtractData(held);
+        int contents = m_terrain.Terrain.GetCellContents(
+            raycastResult.CellFace.X, raycastResult.CellFace.Y, raycastResult.CellFace.Z);
 
-        // 背包升级件作用在身上的背包，指着什么方块都行。
-        if (!StashBackpackUpgrade.IsBackpackUpgrade(upgradeData))
+        // 箱子升级件只对箱子（原版木箱或我们的分级箱）有反应，其它方块放行给原版逻辑。
+        if (contents != StashChestTiers.VanillaChestIndex && !StashChestTiers.IsStashChest(contents))
         {
-            int contents = m_terrain.Terrain.GetCellContents(
-                raycastResult.CellFace.X, raycastResult.CellFace.Y, raycastResult.CellFace.Z);
-
-            // 箱子升级件只对箱子（原版木箱或我们的分级箱）有反应，其它方块放行给原版逻辑。
-            if (contents != StashChestTiers.VanillaChestIndex && !StashChestTiers.IsStashChest(contents))
-            {
-                return false;
-            }
+            return false;
         }
 
         return StashUpgradeUse.TryUseUpgradeItem(Project, m_terrain, m_blockEntities, componentMiner, raycastResult);

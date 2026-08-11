@@ -31,7 +31,6 @@ public static class StashChestTiers
     public const int CopperChestIndex = BaseIndex + 0;
     public const int IronChestIndex = BaseIndex + 1;
     public const int DiamondChestIndex = BaseIndex + 2;
-    public const int ViewChestIndex = BaseIndex + 3;
     public const int UpgradeItemIndex = BaseIndex + 4;
 
     /// <summary>木箱是原版箱子（索引 45），不属于我们的方块，只作为升级链的起点。</summary>
@@ -51,11 +50,8 @@ public static class StashChestTiers
         DiamondChestIndex, "diamond", SlotsCount: 80, Columns: 10, SlotSize: 48f,
         new Color(80, 160, 240), "StashChestDiamond", StackMultiplier: 16);
 
-    public static readonly StashChestTier View = new(
-        ViewChestIndex, "view", SlotsCount: 80, Columns: 10, SlotSize: 48f,
-        new Color(192, 208, 240), "StashChestView", StackMultiplier: 16);
 
-    public static readonly IReadOnlyList<StashChestTier> All = new[] { Copper, Iron, Diamond, View };
+    public static readonly IReadOnlyList<StashChestTier> All = new[] { Copper, Iron, Diamond };
 
     /// <summary>升级链：源方块索引 → 目标档位。升级件的 data 值就是这个链上的位置。</summary>
     public static readonly IReadOnlyList<(int FromBlockIndex, StashChestTier To)> UpgradeChain = new[]
@@ -63,7 +59,6 @@ public static class StashChestTiers
         (VanillaChestIndex, Copper),
         (CopperChestIndex, Iron),
         (IronChestIndex, Diamond),
-        (DiamondChestIndex, View),
     };
 
     public static StashChestTier? ByBlockIndex(int blockIndex)

@@ -19,6 +19,9 @@ public sealed class StashWorldData
 
     public const string SinglePlayerKey = "single";
 
+    /// <summary>存储终端登记簿（编号 / 名字 / 坐标），无线终端靠它认人。</summary>
+    public StashHubRegistry Hubs { get; set; } = new();
+
     public PlayerStashData GetOrCreate(string playerKey)
     {
         if (string.IsNullOrEmpty(playerKey))

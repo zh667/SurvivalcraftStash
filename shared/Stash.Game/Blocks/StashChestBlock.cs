@@ -115,9 +115,3 @@ public class StashDiamondChestBlock : StashChestBlock
     public override StashChestTier Tier => StashChestTiers.Diamond;
 }
 
-public class StashViewChestBlock : StashChestBlock
-{
-    public static int Index = StashChestTiers.ViewChestIndex;
-
-    public override StashChestTier Tier => StashChestTiers.View;
-}

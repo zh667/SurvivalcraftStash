@@ -9,6 +9,11 @@ namespace Stash.Game;
 ///
 /// 用代码搭而不是加 XML 布局：XML 要走 ContentManager 覆盖，容易和别的 Mod / 材质包打架；
 /// 代码搭出来的控件只属于这一份界面实例，界面关掉就跟着没了。
+///
+/// **整理只作用于玩家自己的物品栏。** 箱子里怎么摆是玩家自己的事，替他重排没有意义；
+/// 存储终端的显示本来就是汇总排序过的，底下箱子乱不乱都不影响检索。
+/// 早先给箱子也放了整理按钮，实机反馈是"在物品栏界面点整理却说没有要整理的"——
+/// 因为那个按钮整理的是旁边那个空的合成格。现在只留一个整理，作用对象明确。
 /// </summary>
 public sealed class StashButtonBar : StackPanelWidget
 {
@@ -16,8 +21,7 @@ public sealed class StashButtonBar : StackPanelWidget
     private readonly PanelContainer? m_player;
     private readonly PanelContainer? m_container;
 
-    private readonly ButtonWidget? m_sortContainerButton;
-    private readonly ButtonWidget? m_sortPlayerButton;
+    private readonly ButtonWidget? m_sortButton;
     private readonly ButtonWidget? m_depositButton;
     private readonly ButtonWidget? m_depositAllButton;
     private readonly ButtonWidget? m_takeButton;
@@ -39,14 +43,9 @@ public sealed class StashButtonBar : StackPanelWidget
         VerticalAlignment = WidgetAlignment.Near;
         Margin = new Vector2(0f, 4f);
 
-        if (container != null)
-        {
-            m_sortContainerButton = AddButton(StashText.Sort);
-        }
-
         if (player != null)
         {
-            m_sortPlayerButton = AddButton(container != null ? StashText.SortBackpack : StashText.Sort);
+            m_sortButton = AddButton(StashText.Sort);
         }
 
         if (player != null && container != null)
@@ -84,8 +83,8 @@ public sealed class StashButtonBar : StackPanelWidget
         }
     }
 
-    /// <summary>界面里没有任何可操作的容器时就别挂了。</summary>
-    public static bool IsUseful(PanelContainer? player, PanelContainer? container) => player != null || container != null;
+    /// <summary>没有玩家库存这一侧就没什么可做的（整理和搬运都以它为主体），别挂了。</summary>
+    public static bool IsUseful(PanelContainer? player, PanelContainer? container) => player != null;
 
     private ButtonWidget AddButton(string text)
     {
@@ -116,14 +115,10 @@ public sealed class StashButtonBar : StackPanelWidget
             return;
         }
 
-        if (m_sortContainerButton is { IsClicked: true } && m_container != null)
+        if (m_sortButton is { IsClicked: true } && m_player != null)
         {
-            Report(StashOperations.Sort(m_container), StashText.Sorted, StashText.Nothing);
-        }
-
-        if (m_sortPlayerButton is { IsClicked: true } && m_player != null)
-        {
-            Report(StashOperations.Sort(m_player), StashText.Sorted, StashText.Nothing);
+            int sorted = StashOperations.Sort(m_player);
+            Notify(sorted > 0 ? StashText.Sorted(sorted) : StashText.Nothing);
         }
 
         if (m_depositButton is { IsClicked: true })
@@ -163,8 +158,6 @@ public sealed class StashButtonBar : StackPanelWidget
         Notify(moved > 0 ? StashText.Moved(moved) : StashText.NothingMoved);
     }
 
-    private void Report(int amount, Func<int, string> success, string empty) =>
-        Notify(amount > 0 ? success(amount) : empty);
 
     private void Notify(string message)
     {
