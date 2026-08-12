@@ -87,9 +87,13 @@ public static class StashText
 
     public static string Search => UseEnglish ? "Search" : "搜索";
 
-    public static string ClearSearch => UseEnglish ? "Clear" : "清除";
+    /// <summary>输入框空着的时候显示在框里的灰字，告诉玩家这儿能点、能打字。</summary>
+    public static string SearchHint => UseEnglish ? "click here to type…" : "点这里输入物品名…";
 
-    public static string SearchHint => UseEnglish ? "(all items)" : "（全部物品）";
+    /// <summary>输入框有焦点时挂在状态栏的提示：怎么退出去。</summary>
+    public static string SearchExit => UseEnglish
+        ? "Enter = keep filter · Esc = clear · or just click elsewhere"
+        : "回车＝保留筛选 · Esc＝清空退出 · 点界面别处也能退出";
 
     public static string DefaultHubName(int id) => UseEnglish ? $"Storage Terminal {id}" : $"存储终端{id}";
 

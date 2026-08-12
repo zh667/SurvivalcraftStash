@@ -1,4 +1,5 @@
 using Engine;
+using Engine.Input;
 using Game;
 using Stash.Shared.Network;
 
@@ -27,12 +28,23 @@ public sealed class StashTerminalWidget : CanvasWidget
     private const float HeaderHeight = 84f;
     private const double RefreshInterval = 0.4;
 
+    private const float SearchY = 42f;
+    private const float SearchHeight = 34f;
+
+    /// <summary>"搜索"这两个字占的宽度，输入框从这之后开始。</summary>
+    private const float SearchLabelWidth = 52f;
+
+    /// <summary>文字离输入框内边的距离，不留的话字会贴着边框。</summary>
+    private const float SearchInset = 8f;
+
     /// <summary>玩家物品栏在容器界面里从第 10 格开始显示（0~9 是快捷栏，原版也是这么做的）。</summary>
     private const int PlayerFirstSlot = 10;
 
     private readonly ComponentPlayer m_player;
     private readonly List<IInventory> m_containers;
     private readonly TextBoxWidget m_searchBox;
+    private readonly BevelledRectangleWidget m_searchFrame;
+    private readonly LabelWidget m_searchHint;
     private readonly LabelWidget m_statusLabel;
     private readonly ButtonWidget m_pageUpButton;
     private readonly ButtonWidget m_pageDownButton;
@@ -44,6 +56,7 @@ public sealed class StashTerminalWidget : CanvasWidget
     private double m_nextRefresh;
     private int m_page;
     private string m_lastQuery = string.Empty;
+    private string m_status = string.Empty;
     private bool m_showBackpack;
 
     public StashTerminalWidget(ComponentPlayer player, List<IInventory> containers, string title)
@@ -61,17 +74,47 @@ public sealed class StashTerminalWidget : CanvasWidget
 
         AddLabel(title, new Vector2(Padding, 12f));
 
-        m_searchBox = new TextBoxWidget { Size = new Vector2(gridWidth - 76f, 34f) };
+        // 搜索框。原版 TextBoxWidget 是个"裸"控件——不画背景也不画边框，
+        // 直接摆在面板上只能看见一根闪烁的光标（实机反馈"不容易看到"）。
+        // 自己给它垫一个内凹的框，再配一行占位提示，才看得出这里能打字。
+        AddLabel(StashText.Search, new Vector2(Padding, SearchY + 8f));
+
+        float frameX = Padding + SearchLabelWidth;
+        float frameWidth = gridWidth - 76f - SearchLabelWidth;
+
+        m_searchFrame = new BevelledRectangleWidget
+        {
+            Size = new Vector2(frameWidth, SearchHeight),
+            BevelSize = -2f, // 负值 = 内凹，看起来像个输入槽
+            RoundingRadius = 3f,
+            CenterColor = new Color(0, 0, 0, 110),
+            IsHitTestVisible = false,
+        };
+        Children.Add(m_searchFrame);
+        SetWidgetPosition(m_searchFrame, new Vector2(frameX, SearchY));
+
+        // 占位提示：文字为空时显示。LabelWidget 默认 IsHitTestVisible=false，不会挡住点击。
+        m_searchHint = new LabelWidget
+        {
+            Text = StashText.SearchHint,
+            Size = new Vector2(frameWidth - SearchInset * 2f, SearchHeight),
+            TextAnchor = Engine.Graphics.TextAnchor.VerticalCenter,
+            Color = new Color(255, 255, 255, 90),
+        };
+        Children.Add(m_searchHint);
+        SetWidgetPosition(m_searchHint, new Vector2(frameX + SearchInset, SearchY));
+
+        m_searchBox = new TextBoxWidget { Size = new Vector2(frameWidth - SearchInset * 2f, SearchHeight) };
         Children.Add(m_searchBox);
-        SetWidgetPosition(m_searchBox, new Vector2(Padding, 42f));
+        SetWidgetPosition(m_searchBox, new Vector2(frameX + SearchInset, SearchY));
 
         m_pageUpButton = new BevelledButtonWidget { Text = "▲", Size = new Vector2(34f, 34f) };
         Children.Add(m_pageUpButton);
-        SetWidgetPosition(m_pageUpButton, new Vector2(Padding + gridWidth - 72f, 42f));
+        SetWidgetPosition(m_pageUpButton, new Vector2(Padding + gridWidth - 72f, SearchY));
 
         m_pageDownButton = new BevelledButtonWidget { Text = "▼", Size = new Vector2(34f, 34f) };
         Children.Add(m_pageDownButton);
-        SetWidgetPosition(m_pageDownButton, new Vector2(Padding + gridWidth - 36f, 42f));
+        SetWidgetPosition(m_pageDownButton, new Vector2(Padding + gridWidth - 36f, SearchY));
 
         // 右侧在"物品栏 / 背包"之间切换：背包里的东西也要能方便地丢进网络。
         if (StashBackpack.GetWornTier(player) != null)
@@ -126,8 +169,41 @@ public sealed class StashTerminalWidget : CanvasWidget
 
     public override void Update()
     {
-        // 搜索框有焦点时把按键吃掉，免得打字触发原版和别的 Mod 的热键。
-        StashHotkeys.TypingInProgress = m_searchBox.HasFocus;
+        // 退出搜索的三条路，缺一不可（实机反馈"光标一直闪，退不出去"）：
+        //   1. Esc —— 这里处理；
+        //   2. 回车 —— 确认，保留已输入的内容；
+        //   3. 点界面上别处 —— 这条是原版 TextBoxWidget 自带的，
+        //      之前被我们在 UpdateInput 里调 input.Clear() 给弄瘸了，现在不清了。
+        bool wasFocused = m_searchBox.HasFocus;
+        if (wasFocused)
+        {
+            if (base.Input.IsKeyDownOnce(Key.Escape))
+            {
+                // Esc = 彻底退出：连搜索词一起清掉，列表回到全量。
+                m_searchBox.Text = string.Empty;
+                m_searchBox.HasFocus = false;
+
+                // 把 Esc 吃掉，否则同一下按键会连界面一起关掉。
+                // 想关界面就再按一次——那时 TypingInProgress 已经是 false 了。
+                base.Input.Back = false;
+                base.Input.Cancel = false;
+            }
+            else if (base.Input.IsKeyDownOnce(Key.Enter))
+            {
+                // 回车 = 确认：保留搜索词，只是把焦点放掉。
+                m_searchBox.HasFocus = false;
+            }
+        }
+
+        // 用**退出前**的状态：这一帧仍然按"正在打字"处理，
+        // 否则上面刚吃掉的 Esc 会被本帧稍后的原版逻辑捡回去。
+        StashHotkeys.TypingInProgress = wasFocused;
+
+        m_searchHint.IsVisible = string.IsNullOrEmpty(m_searchBox.Text);
+        m_searchFrame.CenterColor = m_searchBox.HasFocus
+            ? new Color(20, 60, 70, 160)
+            : new Color(0, 0, 0, 110);
+        m_statusLabel.Text = m_searchBox.HasFocus ? StashText.SearchExit : m_status;
 
         double now = m_player.Project.FindSubsystem<SubsystemTime>()?.GameTime ?? 0.0;
         string query = m_searchBox.Text ?? string.Empty;
@@ -254,7 +330,8 @@ public sealed class StashTerminalWidget : CanvasWidget
             }
         }
 
-        m_statusLabel.Text = StashText.TerminalStatus(m_containers.Count, filled.Count, m_page + 1, maxPage + 1);
+        m_status = StashText.TerminalStatus(m_containers.Count, filled.Count, m_page + 1, maxPage + 1);
+        m_statusLabel.Text = m_status;
     }
 
     private static int CompareForDisplay(

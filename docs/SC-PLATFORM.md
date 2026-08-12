@@ -131,6 +131,53 @@ ContentsMask = 1023, LightShift = 10, DataShift = 14, DataMask = -16384
   我们的箱子升级就栽在这里——外观换了、实体没建，于是"提示升级失败 + 新箱子打不开"。**两个重载都要覆写。**
   另外 `ChangeCell` 自带 territory 校验和 `SubsystemTerrainPackage` 广播，服务端改格子用它就对了。
 
+## 5.4 `WidgetInput.Clear()` 会把整个界面的鼠标弄死
+
+想在 `UpdateInput` 钩子里"吃掉按键、别让打字触发热键"时，**不能调 `input.Clear()`**。
+
+原因在点击的合成方式上：`WidgetInput` 是个状态机，按下时记 `m_mouseDownPoint`，
+抬起时才合成出 `Click`。而 `Clear()` 除了清 `Click/Tap/Press`，还会把 `m_mouseDownPoint = null`：
+
+```csharp
+public void Clear()
+{
+    m_isCleared = true;
+    m_mouseDownPoint = null;      // ← 按下的记录没了
+    ...
+    ClearInput();
+}
+```
+
+按下的那一帧被清掉，抬起时就永远合不出 `Click`。于是**只要我们持续 Clear，整个界面的鼠标全废**：
+点不掉输入框的焦点、按钮没反应、物品也拖不动。实机表现就是"搜索框光标一直闪，退不出去，别的功能都测试不了"。
+
+替代做法是**只置 `m_isCleared = true`**（公开字段，直接写）：
+
+- 它单独作用时只挡 `IsKeyDown/IsKeyDownOnce/IsKeyDownRepeat/LastKey/LastChar` 这类**键盘**查询；
+- `Click / Tap / Press / Drag` 是普通自动属性，不受它管 → 鼠标照常；
+- 下一帧 `WidgetInput.Update()` 开头就 `m_isCleared = false`，不会积累。
+
+`Back` / `Cancel`（原版把 Esc 翻译过来的）也是普通属性，`m_isCleared` 管不到，要单独置 false，
+否则打字时按 Esc 会连界面一起关掉。
+
+**帧内顺序**（`Widget.UpdateWidgetsHierarchy` 是"先子后父、子控件倒序"）：
+
+```
+RootWidget.WidgetsHierarchyInput.Update()   // m_isCleared = false，重算 Click
+  └ … → GameWidget.WidgetsHierarchyInput.Update()
+        └ GuiWidget 子树（我们的界面控件在这里 Update）
+        └ GameWidget.Update()
+  └ GameScreen.Update() → GameManager.UpdateProject()
+        └ ComponentInput.Update() → HookAction("UpdateInput")   // 我们的钩子在这儿
+```
+
+所以钩子里改 `m_isCleared` 只会影响**排在我们后面的 Mod 钩子**和本帧剩下的组件逻辑，
+影响不到自己的控件（它们已经更新完了，下一帧又会被复位）。
+
+顺带：原版自己处理"聊天框获得焦点时别让按键当热键"用的是
+`ComponentInput.AllowHandleInput = false`（见 `GameWidget.UpdateInputState`），这是官方姿势，
+但它只管原版自己，管不到别的 Mod。
+
 ## 6. 已知的坑
 
 - 联机版世界文件夹名会被回收复用（见 SCTM 经验）→ 世界侧注册表必须带**种子/世界 GUID 校验**，否则串档。
