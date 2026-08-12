@@ -142,7 +142,7 @@ public abstract class StashChestBlock : CubeBlock
 
 public class StashCopperChestBlock : StashChestBlock
 {
-    public static int Index = StashChestTiers.CopperChestIndex;
+    public static int Index = StashChestTiers.RequestedCopperChestIndex;
 
     public override StashChestTier Tier => StashChestTiers.Copper;
 
@@ -154,7 +154,7 @@ public class StashCopperChestBlock : StashChestBlock
 
 public class StashIronChestBlock : StashChestBlock
 {
-    public static int Index = StashChestTiers.IronChestIndex;
+    public static int Index = StashChestTiers.RequestedIronChestIndex;
 
     public override StashChestTier Tier => StashChestTiers.Iron;
 
@@ -166,7 +166,7 @@ public class StashIronChestBlock : StashChestBlock
 
 public class StashDiamondChestBlock : StashChestBlock
 {
-    public static int Index = StashChestTiers.DiamondChestIndex;
+    public static int Index = StashChestTiers.RequestedDiamondChestIndex;
 
     public override StashChestTier Tier => StashChestTiers.Diamond;
 

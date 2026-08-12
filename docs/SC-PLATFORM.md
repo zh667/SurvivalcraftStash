@@ -289,3 +289,35 @@ UV 仍然按 `格号 % 列数 / 格号 / 列数` 算（`BlocksManager.cs:571`）
   `BlockIconWidget.CustomViewMatrix`（换图标机位）都是逐个格子的公开属性，两个平台都有。
   用 `ModLoader.GuiUpdate` 从 GUI 根节点往下扫一遍就能全覆盖（快捷栏、物品栏、各种容器界面
   都在这棵树下；图鉴那种独立屏幕不在）。
+
+## 5.7 插件版会**重新分配方块索引**（联机版不会）
+
+`public static int Index` 在两个平台的含义不一样：
+
+- **联机版**：`ModEntity.LoadDll` 只是**读**它 —— `block.BlockIndex = (int)fieldInfo.GetValue(null)`。
+  我们写 700 就是 700。
+- **插件版（SCAPI）**：它自己挑一个空闲索引，**再写回那个静态字段**。
+  实机日志实测：我们申请的 700/701/702 全是 `AirBlock`，真实索引落在 300 一带
+  （存储枢纽 304、无线终端 305）。
+
+> **推论：任何地方都不能用编译期常量比较方块索引。**
+> 一律在运行时读方块类自己的 `Index` 静态字段（两个平台都对）。
+
+我们踩的坑：`StashChestTiers` 里把三档箱子和升级件的索引写成了 `const`，
+而 `StashHubBlock.Index` / `StashWirelessTerminalBlock.Index` 恰好是静态字段。
+于是插件版下**只有枢纽和无线终端能用**，分级箱子右键打不开、升级件没反应、
+存储网络也认不出自家箱子——因为那些代码在拿 700 去比一个实际是 300 的方块。
+联机版正好不重写索引，所以一直没暴露。
+
+修法：`StashChestTier.Index` 改成 `Func<int>` 现取（`() => StashCopperChestBlock.Index`），
+常量降级成"申请值"，只用来初始化各方块类的静态字段。
+
+**排查手法**：`StashSelfCheck` 现在会打
+`索引=304（申请 709） 类=StashHubBlock`——
+两个数不一样是正常的，**类名不是自家类**才是出事了。
+
+## 5.8 拖动中的图标不在 GuiWidget 底下
+
+`InventorySlotWidget` 找拖动宿主写的是 `GameWidget.Children.Find<DragHostWidget>()`，
+也就是说 `DragHostWidget` 是 `GuiWidget` 的**兄弟**，不是它的子节点。
+要遍历所有物品图标（含拖动中的那个），根节点得取 `GameWidget` 而不是 `GuiWidget`。

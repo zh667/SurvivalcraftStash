@@ -32,18 +32,20 @@ public static class StashSelfCheck
             return;
         }
 
-        foreach (StashChestTier tier in StashChestTiers.All)
-        {
-            Check(tier.Index, data: 0, $"{tier.Key} 箱");
-        }
-
-        Check(StashHubBlock.Index, data: 0, "存储枢纽");
-        Check(StashChestTiers.UpgradeItemIndex, data: 0, "升级件(铜)");
-        Check(StashWirelessTerminalBlock.Index, data: 0, "无线终端(未绑定)");
+        // 申请值 vs 实际值一起打：插件版会自己重新分配索引再写回静态字段，
+        // 两个数不一样是正常的；**类名不是我们的类**才是出事了。
+        Check(StashChestTiers.Copper.Index, StashChestTiers.RequestedCopperChestIndex, "铜箱");
+        Check(StashChestTiers.Iron.Index, StashChestTiers.RequestedIronChestIndex, "铁箱");
+        Check(StashChestTiers.Diamond.Index, StashChestTiers.RequestedDiamondChestIndex, "钻石箱");
+        Check(StashHubBlock.Index, StashChestTiers.BaseIndex + 9, "存储枢纽");
+        Check(StashChestTiers.UpgradeItemIndex, StashChestTiers.RequestedUpgradeItemIndex, "升级件");
+        Check(StashWirelessTerminalBlock.Index, StashChestTiers.BaseIndex + 10, "无线终端");
     }
 
-    private static void Check(int blockIndex, int data, string name)
+    private static void Check(int blockIndex, int requested, string name)
     {
+        const int data = 0;
+
         if (blockIndex < 0 || blockIndex >= BlocksManager.Blocks.Length)
         {
             Log.Warning($"[Stash] 自检：{name} 的方块索引 {blockIndex} 越界。");
@@ -60,8 +62,8 @@ public static class StashSelfCheck
         // 类型名一起打出来：如果这里不是我们的类，说明方块根本没注册成我们的实现，
         // 那再怎么调贴图也没用。
         int value = Terrain.MakeBlockValue(blockIndex, 0, data);
-        Log.Information($"[Stash] 自检：{name} 索引={blockIndex} 类={block.GetType().Name} "
-            + $"默认格={block.DefaultTextureSlot}");
+        Log.Information($"[Stash] 自检：{name} 索引={blockIndex}（申请 {requested}）"
+            + $" 类={block.GetType().Name} 默认格={block.DefaultTextureSlot}");
         StashBlockTextures.LogFaceSlots(block, value, name);
     }
 }

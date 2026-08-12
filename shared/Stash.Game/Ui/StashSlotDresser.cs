@@ -22,8 +22,8 @@ namespace Stash.Game;
 /// <c>InventorySlotWidget.HideHealthBar</c> 和 <c>BlockIconWidget.CustomViewMatrix</c>，
 /// 两个平台都有。所以改控件，不改方块。
 ///
-/// 由 <c>ModLoader.GuiUpdate</c> 驱动，从 GUI 根节点往下扫——快捷栏、物品栏、箱子、
-/// 我们自己的界面全在这棵树底下。扫描做了节流，不是每帧都走。
+/// 由 <c>ModLoader.GuiUpdate</c> 驱动，从 <c>GameWidget</c> 往下扫——快捷栏、物品栏、箱子、
+/// 我们自己的界面、以及**拖动中的那个图标**全在这棵树底下。扫描做了节流，不是每帧都走。
 /// （图鉴那种独立屏幕不在这棵树里，那儿的图标仍是原版取景。）
 /// </summary>
 public static class StashSlotDresser
@@ -39,7 +39,11 @@ public static class StashSlotDresser
 
     public static void Update(ComponentGui? gui)
     {
-        if (gui?.m_componentPlayer?.GameWidget?.GuiWidget is not { } root)
+        // 从 **GameWidget** 起扫，而不是 GuiWidget。
+        // 拖动中的那个图标挂在 DragHostWidget 上，而它是 GuiWidget 的**兄弟**
+        // （InventorySlotWidget 里写的是 GameWidget.Children.Find<DragHostWidget>()），
+        // 只扫 GuiWidget 就会漏掉它——实机表现是"拖动时背包又变回正面（肩带）"。
+        if (gui?.m_componentPlayer?.GameWidget is not { } root)
         {
             return;
         }

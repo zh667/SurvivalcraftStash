@@ -14,7 +14,7 @@ namespace Stash.Game;
 /// </summary>
 public class StashChestUpgradeBlock : CubeBlock
 {
-    public static int Index = StashChestTiers.UpgradeItemIndex;
+    public static int Index = StashChestTiers.RequestedUpgradeItemIndex;
 
     /// <summary>铁锭在原版图集里的槽位（实测 #A0A0A0 的那格）。拿不到自家贴图时用。</summary>
     public const int IngotTextureSlot = 196;
