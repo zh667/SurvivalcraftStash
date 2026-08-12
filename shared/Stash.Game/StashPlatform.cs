@@ -34,6 +34,15 @@ public interface IStashPlatform
     /// <summary>当前操作者的标识（联机版用玩家 GUID，单人版固定值）。</summary>
     string CurrentPlayerKey { get; }
 
+    /// <summary>
+    /// 取当前世界的 <c>SubsystemGameInfo</c>，拿不到返回 null。
+    ///
+    /// 存在的理由：世界数据要写到 <c>DirectoryName</c> 下，而进世界的钩子里
+    /// 这个 Subsystem 未必已经就绪（实机日志里 OnLoadingFinished 那一刻就是拿不到，
+    /// 结果登记簿一次都没落盘）。所以改成**每次要用时现取**。
+    /// </summary>
+    SubsystemGameInfo? FindGameInfo();
+
     void Log(string message);
 }
 

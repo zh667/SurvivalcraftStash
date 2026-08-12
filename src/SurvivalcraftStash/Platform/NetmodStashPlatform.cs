@@ -36,6 +36,9 @@ public sealed class NetmodStashPlatform : IStashPlatform
         }
     }
 
+    public SubsystemGameInfo? FindGameInfo() =>
+        GameManager.Project?.FindSubsystem<SubsystemGameInfo>(throwOnError: false);
+
     public void Execute(StashPlan plan)
     {
         if (plan.IsEmpty)

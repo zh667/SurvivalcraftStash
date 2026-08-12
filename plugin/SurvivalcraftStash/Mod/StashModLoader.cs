@@ -40,13 +40,18 @@ public class StashModLoader : ModLoader
 
     public override void OnProjectLoaded(Project project)
     {
-        SubsystemGameInfo? gameInfo = project?.FindSubsystem<SubsystemGameInfo>();
+        SubsystemGameInfo? gameInfo = project?.FindSubsystem<SubsystemGameInfo>(throwOnError: false);
         if (gameInfo != null)
         {
             StashStore.Load(gameInfo);
         }
+        else
+        {
+            Log.Warning("[Stash] OnProjectLoaded 时拿不到 SubsystemGameInfo，世界数据推迟到首次读写时再读。");
+        }
 
         StashUiInjector.Reset();
+        StashSelfCheck.Run();
     }
 
     public override void OnProjectDisposed()

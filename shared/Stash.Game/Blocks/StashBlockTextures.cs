@@ -1,5 +1,6 @@
 using Engine;
 using Engine.Graphics;
+using Engine.Media;
 using Game;
 
 namespace Stash.Game;
@@ -76,6 +77,7 @@ public static class StashBlockTextures
             {
                 s_texture = ContentManager.Get<Texture2D>("Textures/Stash/Blocks");
                 Log.Information($"[Stash] 方块贴图已载入：{s_texture?.Width}x{s_texture?.Height}");
+                SelfCheck();
             }
             catch (Exception exception)
             {
@@ -84,6 +86,69 @@ public static class StashBlockTextures
             }
 
             return s_texture;
+        }
+    }
+
+    /// <summary>
+    /// 一次性自检，把"贴图里到底是什么颜色"和"每个方块要取第几格"都打进日志。
+    ///
+    /// 之所以要这一段：实机连着两轮都是纯黑，而黑色可能来自三个完全不同的原因——
+    /// 贴图没解码出来、UV 算到了没画东西的地方、或者颜色被乘成了 0。
+    /// 光看画面分不出是哪一种，日志里对一眼数字就知道了。
+    ///
+    /// <c>ContentManager</c> 里有 <c>ImageReader</c>，所以同一份资源能再取一份 CPU 侧的
+    /// <see cref="Image"/> 来读像素——这是 GPU 纹理做不到的。
+    /// </summary>
+    private static void SelfCheck()
+    {
+        try
+        {
+            var image = ContentManager.Get<Image>("Textures/Stash/Blocks");
+            if (image == null)
+            {
+                Log.Warning("[Stash] 自检：取不到 Image，读不了像素。");
+                return;
+            }
+
+            Log.Information($"[Stash] 自检：图集 {image.Width}x{image.Height}，"
+                + $"格边长 {image.Width / SlotCount}");
+
+            foreach ((string name, int slot) in new[]
+            {
+                ("铜箱正面", CopperChestFront),
+                ("枢纽正面", HubFront),
+                ("升级件铜", UpgradeFirst),
+                ("未用格20", 20),
+            })
+            {
+                int tile = image.Width / SlotCount;
+                int x = slot % SlotCount * tile + tile / 2;
+                int y = slot / SlotCount * tile + tile / 2;
+                Color pixel = image.GetPixel(x, y);
+                Log.Information($"[Stash] 自检：格{slot}({name}) 中心像素 = "
+                    + $"R{pixel.R} G{pixel.G} B{pixel.B} A{pixel.A}");
+            }
+        }
+        catch (Exception exception)
+        {
+            Log.Warning($"[Stash] 自检读像素失败：{exception.Message}");
+        }
+    }
+
+    /// <summary>把一个方块实际会用到的格号打进日志。方块自己在初始化后调一次。</summary>
+    public static void LogFaceSlots(Block block, int value, string name)
+    {
+        try
+        {
+            Log.Information($"[Stash] 自检：{name} 列数={block.GetTextureSlotCount(value)}，"
+                + $"六面格号=[{block.GetFaceTextureSlot(0, value)},{block.GetFaceTextureSlot(1, value)},"
+                + $"{block.GetFaceTextureSlot(2, value)},{block.GetFaceTextureSlot(3, value)},"
+                + $"{block.GetFaceTextureSlot(4, value)},{block.GetFaceTextureSlot(5, value)}]，"
+                + $"平面格号={block.GetFaceTextureSlot(-1, value)}");
+        }
+        catch (Exception exception)
+        {
+            Log.Warning($"[Stash] 自检 {name} 失败：{exception.Message}");
         }
     }
 }

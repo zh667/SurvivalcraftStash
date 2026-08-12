@@ -32,7 +32,14 @@ public static class StashStore
     /// </summary>
     private static SubsystemGameInfo? s_gameInfo;
 
-    public static StashWorldData Data => s_data ??= new StashWorldData();
+    public static StashWorldData Data
+    {
+        get
+        {
+            EnsureLoaded();
+            return s_data ??= new StashWorldData();
+        }
+    }
 
     public static PlayerStashData ForCurrentPlayer() =>
         Data.GetOrCreate(StashPlatform.IsReady ? StashPlatform.Current.CurrentPlayerKey : StashWorldData.SinglePlayerKey);
@@ -97,6 +104,7 @@ public static class StashStore
 
     public static void Save()
     {
+        EnsureLoaded();
         if (s_data == null)
         {
             return;
@@ -129,10 +137,51 @@ public static class StashStore
         s_gameInfo = null;
     }
 
+    /// <summary>
+    /// 解析世界数据文件的路径。
+    ///
+    /// 先用 Load 时拿到的那个 <c>SubsystemGameInfo</c>；拿不到就**现问平台要一个**——
+    /// 实机日志显示 <c>OnLoadingFinished</c> 那一刻 <c>GameManager.Project</c> 还是 null，
+    /// 于是 Load 整段被跳过（连日志都没打），后面每次保存都只能报"拿不到世界目录"。
+    /// </summary>
     private static string? ResolvePath()
     {
+        s_gameInfo ??= StashPlatform.IsReady ? StashPlatform.Current.FindGameInfo() : null;
+
         string? directory = s_gameInfo?.DirectoryName;
         return string.IsNullOrEmpty(directory) ? null : Storage.CombinePaths(directory, FileName);
+    }
+
+    /// <summary>
+    /// 世界数据还没读过就补读一次。
+    ///
+    /// 进世界的钩子不保证能拿到 <c>SubsystemGameInfo</c>，所以任何一次读写之前都补一刀；
+    /// 读成功后 <see cref="s_path"/> 就有值了，之后不会再走这里。
+    /// </summary>
+    private static void EnsureLoaded()
+    {
+        if (s_path != null || !StashPlatform.IsReady)
+        {
+            return;
+        }
+
+        if (StashPlatform.Current.FindGameInfo() is not { } gameInfo || string.IsNullOrEmpty(gameInfo.DirectoryName))
+        {
+            return;
+        }
+
+        // 内存里已经攒了东西（比如刚登记的终端还没落盘）就不能重读——那会把它冲掉。
+        // 这种情况只补一个路径，内容原样保留，下一次 Save 就能写出去。
+        if (s_data != null && (s_data.Hubs.Hubs.Count > 0 || s_data.Players.Count > 0))
+        {
+            s_gameInfo = gameInfo;
+            s_path = ResolvePath();
+            Log.Information($"[Stash] 补上了世界数据路径：{s_path}（内存里已有数据，不重读）");
+            return;
+        }
+
+        Log.Information("[Stash] 进世界时没拿到 SubsystemGameInfo，现在补读世界数据。");
+        Load(gameInfo);
     }
 
     private static void BackupMismatched()

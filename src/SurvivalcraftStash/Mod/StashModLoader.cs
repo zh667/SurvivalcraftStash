@@ -63,12 +63,20 @@ public class StashModLoader : ModLoader
     {
         actions.Add(() =>
         {
-            SubsystemGameInfo? gameInfo = GameManager.Project?.FindSubsystem<SubsystemGameInfo>();
+            SubsystemGameInfo? gameInfo = GameManager.Project?.FindSubsystem<SubsystemGameInfo>(throwOnError: false);
             if (gameInfo != null)
             {
                 StashStore.Load(gameInfo);
-                StashUiInjector.Reset();
             }
+            else
+            {
+                // 实机日志里就是走的这条，而且原来一句话都不打，查了一轮才发现。
+                // StashStore 现在会在第一次读写时自己补读，这里只留个记号。
+                Log.Warning("[Stash] OnLoadingFinished 时还拿不到 SubsystemGameInfo，世界数据推迟到首次读写时再读。");
+            }
+
+            StashUiInjector.Reset();
+            StashSelfCheck.Run();
         });
 
         // 联机版的 ModLoader 没有"世界保存"钩子，所以退出世界时收尾。

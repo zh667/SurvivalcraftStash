@@ -12,6 +12,9 @@ public sealed class ScmodStashPlatform : IStashPlatform
 
     public string CurrentPlayerKey => StashWorldData.SinglePlayerKey;
 
+    public SubsystemGameInfo? FindGameInfo() =>
+        GameManager.Project?.FindSubsystem<SubsystemGameInfo>(throwOnError: false);
+
     public void Execute(StashPlan plan)
     {
         foreach ((IInventory inventory, var assignments) in plan.Parts)
