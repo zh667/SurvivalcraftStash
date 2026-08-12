@@ -21,9 +21,8 @@ public sealed class StashTerminalWidget : CanvasWidget
     private const int Columns = 8;
     private const int Rows = 5;
     private const float CellSize = 60f;
-    private const int PlayerColumns = 4;
-    private const int PlayerRows = 4;
-    private const float PlayerSlotSize = 60f;
+    private const int PlayerColumns = 6;
+    private const float PlayerSlotSize = 50f;
     private const float Padding = 12f;
     private const float HeaderHeight = 84f;
     private const double RefreshInterval = 0.4;
@@ -66,8 +65,15 @@ public sealed class StashTerminalWidget : CanvasWidget
 
         float gridWidth = Columns * CellSize;
         float sideWidth = PlayerColumns * PlayerSlotSize;
+
+        // 右侧要能装下两种内容：玩家物品栏（去掉快捷栏那 10 格）和背包（最大档 32 格）。
+        int sideSlots = MathUtils.Max(
+            player.ComponentMiner.Inventory.SlotsCount - PlayerFirstSlot,
+            StashBackpack.GetWornTier(player) != null ? StashBackpackTiers.MaxSlots : 0);
+        int sideRows = MathUtils.Max(1, (sideSlots + PlayerColumns - 1) / PlayerColumns);
+
         float width = Padding * 3f + gridWidth + sideWidth;
-        float height = Padding * 2f + HeaderHeight + MathUtils.Max(Rows * CellSize, PlayerRows * PlayerSlotSize) + 30f;
+        float height = Padding * 2f + HeaderHeight + MathUtils.Max(Rows * CellSize, sideRows * PlayerSlotSize) + 30f;
         Size = new Vector2(width, height);
 
         Children.Add(new BevelledRectangleWidget { Size = new Vector2(width, height), BevelSize = 3f });
@@ -133,7 +139,7 @@ public sealed class StashTerminalWidget : CanvasWidget
         }
 
         BuildGrid(m_cells, Columns, Rows, CellSize, new Vector2(Padding, Padding + HeaderHeight));
-        BuildGrid(m_sideSlots, PlayerColumns, PlayerRows, PlayerSlotSize,
+        BuildGrid(m_sideSlots, PlayerColumns, sideRows, PlayerSlotSize,
             new Vector2(Padding * 2f + gridWidth, Padding + HeaderHeight));
 
         m_statusLabel = new LabelWidget { Color = new Color(255, 255, 255, 160) };
@@ -246,16 +252,21 @@ public sealed class StashTerminalWidget : CanvasWidget
         IInventory inventory = m_player.ComponentMiner.Inventory;
         int firstSlot = PlayerFirstSlot;
 
+        // 背包能露出几格看**穿着的档位**（铜 16 / 铁 24 / 钻石 32），
+        // 不是组件那 32 格的物理上限——超出档位的格子是锁住的。
+        int usable = inventory.SlotsCount - firstSlot;
+
         if (m_showBackpack && StashBackpack.GetInventory(m_player) is { } backpack)
         {
             inventory = backpack;
             firstSlot = 0;
+            usable = StashBackpack.GetWornTier(m_player)?.SlotsCount ?? 0;
         }
 
         for (int i = 0; i < m_sideSlots.Count; i++)
         {
             int slot = firstSlot + i;
-            if (slot < inventory.SlotsCount)
+            if (i < usable && slot < inventory.SlotsCount)
             {
                 m_sideSlots[i].AssignInventorySlot(inventory, slot);
                 m_sideSlots[i].IsVisible = true;

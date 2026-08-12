@@ -10,6 +10,13 @@ public static class StashText
 
     public static string Sort => UseEnglish ? "Sort" : "整理";
 
+    /// <summary>一个界面里可能有两块库存（箱子 + 物品栏），按钮得说清楚整理的是哪一边。</summary>
+    public static string SortInventory => UseEnglish ? "Sort Inventory" : "整理物品栏";
+
+    public static string SortChest => UseEnglish ? "Sort Chest" : "整理箱子";
+
+    public static string SortBackpack => UseEnglish ? "Sort Backpack" : "整理背包";
+
 
 
 
@@ -63,7 +70,19 @@ public static class StashText
     };
 
     public static string BackpackNotWorn =>
-        UseEnglish ? "You are not wearing a backpack" : "你没有背着背包";
+        UseEnglish ? "You are not wearing a backpack" : "你没有背着背包（拿在手里右键就能背上）";
+
+    public static string BackpackWornNow(StashBackpackTier tier) =>
+        UseEnglish ? $"{BackpackName(tier)} equipped" : $"背上了{BackpackName(tier)}";
+
+    /// <summary>背包是躯干最外层，外面还套着别的衣服时穿不上（原版 CanWearClothing 按层数比较）。</summary>
+    public static string BackpackBlockedByClothes =>
+        UseEnglish
+            ? "Take off your outer torso clothing first — the backpack goes on top"
+            : "背包要背在最外层，先把身上更外层的衣服脱掉";
+
+    public static string BackpackAlreadyWorn =>
+        UseEnglish ? "You are already wearing a backpack" : "你已经背着一个背包了（先脱下来再换）";
 
     public static string BackpackComponentMissing =>
         UseEnglish ? "Backpack storage is unavailable in this world" : "这个世界里背包存储没挂上（换个新世界或重装 Mod 试试）";

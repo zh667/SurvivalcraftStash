@@ -10,13 +10,17 @@ namespace Stash.Game;
 /// setter 里触发，此时新界面**已经构造完毕**（子控件都在）。
 /// 另一个候选 <c>OnWidgetConstruct</c> 是在 XML 加载**之前**触发的，那时还没有子控件，用不了。
 ///
-/// **只在两种界面上挂**：玩家自己的物品栏、背包。
-/// 箱子、存储终端、衣物界面一律不挂——那里的排布要么是玩家自己摆的，要么本来就是排好序的。
+/// **挂在哪些界面**：玩家物品栏、背包、箱子（原版箱子和我们的分级箱子都算）。
+/// 一个界面里有几块值得整理的库存就给几个按钮——箱子界面上"整理箱子"和"整理物品栏"各一个。
+/// 熔炉、工作台、衣物这些格子少、顺序有含义的界面不挂。
 /// </summary>
 public static class StashUiInjector
 {
     /// <summary>已经挂过的界面，避免重复挂。</summary>
     private static readonly HashSet<Widget> s_injected = new();
+
+    /// <summary>格子数少于这个的库存不当作"仓库"（工作台 3×3、衣物 4 格、熔炉几格）。</summary>
+    private const int MinContainerSlots = 8;
 
     public static void OnModalPanelChanged(ComponentGui gui, Widget? oldWidget, Widget? newWidget)
     {
@@ -46,6 +50,13 @@ public static class StashUiInjector
 
     private static void Inject(ComponentGui gui, Widget panel)
     {
+        // 存储终端不挂：它左边一屏格子分属整个网络里的几十个箱子，
+        // 按"每块库存一个按钮"来会挂出一排"整理箱子"。而且终端的显示本来就是排好序的。
+        if (panel is StashTerminalWidget)
+        {
+            return;
+        }
+
         if (PanelInventoryScanner.FindHost(panel) is not { } host)
         {
             return;
@@ -53,44 +64,84 @@ public static class StashUiInjector
 
         IInventory? viewerInventory = gui?.m_componentPlayer?.ComponentMiner?.Inventory;
         List<PanelContainer> containers = PanelInventoryScanner.Scan(panel, viewerInventory);
-        if (containers.Count == 0)
+        List<(StashSortKind Kind, PanelContainer Target)> targets = ChooseSortTargets(containers);
+        if (targets.Count == 0)
         {
             return;
         }
 
-        PanelContainer? target = ChooseSortTarget(containers);
-        if (target == null)
-        {
-            return;
-        }
-
-        host.Children.Add(new StashButtonBar(gui, target));
+        MakeRoomForBar(host);
+        host.Children.Add(new StashButtonBar(gui, targets));
         s_injected.Add(panel);
+
+        Log.Information($"[Stash] {panel.GetType().Name} 挂上 {targets.Count} 个整理按钮");
     }
 
     /// <summary>
-    /// 整理谁：背包界面整理背包，玩家物品栏界面整理物品栏，其它界面一概不挂。
-    /// 创造模式的物品栏是无限物品面板，整理它没有意义。
+    /// 把面板加高一条，按钮就落在新腾出来的空白里而不是压在格子上。
+    ///
+    /// 原版这些界面的根节点都是 <see cref="CanvasWidget"/> 且 XML 里写死了 <c>Size</c>，
+    /// 而 <c>CanvasWidget.MeasureOverride</c> 在 <c>Size >= 0</c> 时直接用它当 DesiredSize，
+    /// 子控件又是按显式坐标（左上角锚定）摆的，所以加高只会在底部多出一块空白，
+    /// 已有的格子不会动。
+    ///
+    /// 少数界面没写死 Size（自适应）——那种情况加不了，退回"贴底边"，可能压住一点点。
     /// </summary>
-    private static PanelContainer? ChooseSortTarget(List<PanelContainer> containers)
+    private static void MakeRoomForBar(ContainerWidget host)
     {
+        if (host is not CanvasWidget canvas)
+        {
+            return;
+        }
+
+        Vector2 size = canvas.Size;
+        if (size.Y >= 0f)
+        {
+            canvas.Size = new Vector2(size.X, size.Y + StashButtonBar.BarHeight);
+        }
+        else
+        {
+            Log.Warning($"[Stash] {host.GetType().Name} 的 Size 是自适应的（{size}），整理按钮只能贴底边");
+        }
+    }
+
+    /// <summary>
+    /// 挑出这个界面里值得整理的库存。
+    ///
+    /// - 背包 / 分级箱子 / 原版箱子：整理
+    /// - 玩家自己的物品栏：整理（创造模式的那份是无限物品面板，跳过）
+    /// - 工作台、熔炉、衣物槽：格子少或者顺序本身有含义，不整理
+    /// </summary>
+    private static List<(StashSortKind Kind, PanelContainer Target)> ChooseSortTargets(List<PanelContainer> containers)
+    {
+        var targets = new List<(StashSortKind, PanelContainer)>();
+
         foreach (PanelContainer container in containers)
         {
             if (container.Inventory is ComponentStashBackpack)
             {
-                return container;
+                targets.Add((StashSortKind.Backpack, container));
+            }
+            else if (!container.IsViewerInventory && container.SlotIndexes.Count >= MinContainerSlots
+                && container.Inventory is not ComponentClothing
+                && !targets.Exists(t => t.Item1 == StashSortKind.Container))
+            {
+                // 只认第一块——正常界面就一个容器，多出来的多半是我们没预料到的界面，
+                // 与其挂一排按钮不如少挂。
+                targets.Add((StashSortKind.Container, container));
             }
         }
 
         foreach (PanelContainer container in containers)
         {
-            if (container.IsPlayerInventory && !container.IsCreative)
+            // 创造模式下这份是无限物品面板，整理它没有意义（但同一个界面里的箱子照样能整理）。
+            if (container.IsViewerInventory && !container.IsCreative)
             {
-                return container;
+                targets.Add((StashSortKind.PlayerInventory, container));
             }
         }
 
-        return null;
+        return targets;
     }
 
     public static void Reset() => s_injected.Clear();

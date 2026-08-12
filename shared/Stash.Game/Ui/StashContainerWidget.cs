@@ -15,9 +15,8 @@ public class StashContainerWidget : CanvasWidget
 {
     private const float Padding = 12f;
     private const float LabelHeight = 40f;
-    private const float PlayerSlotSize = 60f;
-    private const int PlayerColumns = 4;
-    private const int PlayerRows = 4;
+    private const float PlayerSlotSize = 50f;
+    private const int PlayerColumns = 6;
 
     /// <summary>玩家背包在容器界面里从第 10 格开始显示（0~9 是快捷栏，原版也是这么做的）。</summary>
     private const int PlayerFirstSlot = 10;
@@ -46,8 +45,16 @@ public class StashContainerWidget : CanvasWidget
         int rows = (slots + columns - 1) / columns;
         float containerWidth = columns * slotSize;
         float containerHeight = rows * slotSize;
+
+        // 右侧要能装下**两种**内容：玩家物品栏（去掉快捷栏那 10 格）和背包（最大档 32 格）。
+        // 之前写死 4×4=16 格，结果切到背包时格子数还是按物品栏来（实机反馈"背包格子数量没按真实的来"），
+        // 而且物品栏本身超过 16 格的部分也被吞了。
+        int sideSlots = MathUtils.Max(
+            playerInventory.SlotsCount - PlayerFirstSlot,
+            player != null && StashBackpack.GetWornTier(player) != null ? StashBackpackTiers.MaxSlots : 0);
+        int sideRows = MathUtils.Max(1, (sideSlots + PlayerColumns - 1) / PlayerColumns);
         float playerWidth = PlayerColumns * PlayerSlotSize;
-        float playerHeight = PlayerRows * PlayerSlotSize;
+        float playerHeight = sideRows * PlayerSlotSize;
 
         float width = Padding * 3f + containerWidth + playerWidth;
         float height = Padding * 2f + LabelHeight + MathUtils.Max(containerHeight, playerHeight);
@@ -80,8 +87,10 @@ public class StashContainerWidget : CanvasWidget
         AddGrid(container, firstSlot, slots, columns, rows, slotSize,
             new Vector2(Padding, Padding + LabelHeight));
 
-        AddGrid(playerInventory, PlayerFirstSlot, PlayerColumns * PlayerRows, PlayerColumns, PlayerRows, PlayerSlotSize,
+        AddGrid(playerInventory, PlayerFirstSlot, sideSlots, PlayerColumns, sideRows, PlayerSlotSize,
             new Vector2(Padding * 2f + containerWidth, Padding + LabelHeight), m_sideSlots);
+
+        BindSide();
     }
 
     private void AddLabel(string text, Vector2 position)
@@ -150,16 +159,22 @@ public class StashContainerWidget : CanvasWidget
         IInventory inventory = m_playerInventory;
         int firstSlot = PlayerFirstSlot;
 
+        // 能显示多少格，看的是**当前这一侧**的真实容量：
+        // 背包按穿着的档位（铜 16 / 铁 24 / 钻石 32），不是组件那 32 格的物理上限——
+        // 超出档位的格子是锁住的，露出来只会让人往里塞东西然后被退还。
+        int usable = inventory.SlotsCount - firstSlot;
+
         if (m_showBackpack && m_player != null && StashBackpack.GetInventory(m_player) is { } backpack)
         {
             inventory = backpack;
             firstSlot = 0;
+            usable = StashBackpack.GetWornTier(m_player)?.SlotsCount ?? 0;
         }
 
         for (int i = 0; i < m_sideSlots.Count; i++)
         {
             int slot = firstSlot + i;
-            if (slot < inventory.SlotsCount)
+            if (i < usable && slot < inventory.SlotsCount)
             {
                 m_sideSlots[i].AssignInventorySlot(inventory, slot);
                 m_sideSlots[i].IsVisible = true;
