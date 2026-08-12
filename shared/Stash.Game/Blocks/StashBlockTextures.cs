@@ -5,7 +5,8 @@ using Game;
 namespace Stash.Game;
 
 /// <summary>
-/// 我们自己的方块图集：<c>Assets/Textures/Stash/Blocks.png</c>，256×256 = 8×8 格，每格 32×32。
+/// 我们自己的方块图集：<c>Assets/Textures/Stash/Blocks.png</c>，512×512 = 16×16 格，每格 32×32——
+/// **和原版图集同规格**。
 ///
 /// **为什么可以有自己的图集**（一开始我以为不行，翻了本体才发现能）：
 /// 地形几何是**按贴图分批**的——
@@ -18,38 +19,43 @@ namespace Stash.Game;
 ///
 /// 所以不用去动全局的 <c>Textures/Blocks</c>——那张图玩家的材质包也在改，碰了必然打架。
 ///
-/// UV 是 <c>BlocksManager</c> 按 <c>格号 % 列数 / 格号 / 列数</c> 算的，
-/// 所以 <see cref="Block.GetTextureSlotCount"/> 必须返回 <see cref="SlotCount"/>，
-/// <c>GetFaceTextureSlot</c> 返回下面这些格号。
+/// UV 是 <c>BlocksManager</c> 按 <c>格号 % 列数 / 格号 / 列数</c> 算的，列数取自
+/// <c>Block.GetTextureSlotCount()</c>，默认 16。
+///
+/// **一定要用 16 列。** 第一版做成 8 列 + 覆写 <c>GetTextureSlotCount</c>，实机六个方块全黑：
+/// 只要有任何一条路径没走到那个覆写（例如按 BlocksData 里的 <c>DefaultTextureSlot</c> 取格），
+/// 采样点就落到图集里没画东西的地方，而**透明像素在不透明批次里就是纯黑**。
+/// 现在列数与原版一致、覆写全部去掉，并且每个方块的 <c>DefaultTextureSlot</c> 直接指向自己的正面格，
+/// 就算 <c>GetFaceTextureSlot</c> 因故没生效，也只是六面同图，不会变黑。
 ///
 /// 贴图本身是 <c>tools/gen_textures.py</c> 生成的，改配色/形状去改那个脚本，别手改 PNG。
 /// </summary>
 public static class StashBlockTextures
 {
-    /// <summary>图集一行几格。改这个要同步改 gen_textures.py 里的 COLS。</summary>
-    public const int SlotCount = 8;
+    /// <summary>图集一行几格。必须等于原版默认值 16，改这个要同步改 gen_textures.py 的 COLS。</summary>
+    public const int SlotCount = 16;
 
     public const int CopperChestFront = 0;
     public const int CopperChestSide = 1;
     public const int CopperChestTop = 2;
 
-    public const int IronChestFront = 8;
-    public const int IronChestSide = 9;
-    public const int IronChestTop = 10;
+    public const int IronChestFront = 3;
+    public const int IronChestSide = 4;
+    public const int IronChestTop = 5;
 
-    public const int DiamondChestFront = 16;
-    public const int DiamondChestSide = 17;
-    public const int DiamondChestTop = 18;
+    public const int DiamondChestFront = 6;
+    public const int DiamondChestSide = 7;
+    public const int DiamondChestTop = 8;
 
-    public const int HubFront = 24;
-    public const int HubSide = 25;
-    public const int HubTop = 26;
+    public const int HubFront = 9;
+    public const int HubSide = 10;
+    public const int HubTop = 11;
 
-    /// <summary>升级件三档，格号 = 32 + 升级链下标。</summary>
-    public const int UpgradeFirst = 32;
+    /// <summary>升级件三档，格号 = 12 + 升级链下标。</summary>
+    public const int UpgradeFirst = 12;
 
-    public const int WirelessUnbound = 40;
-    public const int WirelessBound = 41;
+    public const int WirelessUnbound = 15;
+    public const int WirelessBound = 16;
 
     private static Texture2D? s_texture;
 
@@ -69,6 +75,7 @@ public static class StashBlockTextures
             try
             {
                 s_texture = ContentManager.Get<Texture2D>("Textures/Stash/Blocks");
+                Log.Information($"[Stash] 方块贴图已载入：{s_texture?.Width}x{s_texture?.Height}");
             }
             catch (Exception exception)
             {

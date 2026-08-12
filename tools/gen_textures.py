@@ -3,7 +3,7 @@
 
     python3 tools/gen_textures.py
 
-产物：shared/Assets/Textures/Stash/Blocks.png（256×256 = 8×8 格，每格 32×32）
+产物：shared/Assets/Textures/Stash/Blocks.png（512×512 = 16×16 格，每格 32×32，和原版图集同规格）
 另外会在 refs/preview/ 下放一张放大的预览图，方便肉眼检查。
 
 **为什么是脚本而不是画好的 PNG**：贴图要跟着档位配色、格子编号一起改，
@@ -16,7 +16,7 @@
   - 存储终端照 Tom's Simple Storage 的 terminal_front——深色机箱 + 一排物品槽 + 顶上一条屏幕。
   两边都只参考**设计**（形状怎么排、颜色怎么分），像素是这里自己画的，没有拷贝任何一方的贴图文件。
 
-坐标约定：格号 = 行*8 + 列，和 Block.GetFaceTextureSlot 返回的值一致。
+坐标约定：格号 = 行*16 + 列，和 Block.GetFaceTextureSlot 返回的值一致。
 """
 import os
 import sys
@@ -25,8 +25,15 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pngio  # noqa: E402
 
 TILE = 32
-COLS = 8
-ROWS = 8
+# **必须和原版一样是 16 列**。原版的 UV 是 `格号 % 列数 / 列数` 算的，列数来自
+# Block.GetTextureSlotCount()，默认 16。我们一度做成 8 列并覆写 GetTextureSlotCount，
+# 结果实机全黑——只要有任何一条路径没走到那个覆写（比如按 BlocksData 里的
+# DefaultTextureSlot 取格），采样点就落到图集里没画东西的地方，
+# 透明像素在不透明批次里就是纯黑。
+# 现在列数跟原版一致，而且每个方块的 DefaultTextureSlot 直接指向自己的格子，
+# 覆写没生效也只是少了正面/侧面的区分，不会变黑。
+COLS = 16
+ROWS = 16
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'shared', 'Assets', 'Textures', 'Stash', 'Blocks.png')
@@ -306,39 +313,62 @@ def wireless(bound):
 
 # ---------------------------------------------------------------- 拼图集
 
-# 格号 = 行*8 + 列。改这里就要同步改 StashBlockTextures.cs 里的常量。
+# 格号 = 行*16 + 列，和原版图集同一套坐标。
+# **每一档的第一格就是它在 StashBlocksData.csv 里的 DefaultTextureSlot**，
+# 这样即使 GetFaceTextureSlot 的覆写因故没生效，也只是六个面都用正面那格，不会采到空白。
+# 改这里要同步改 StashBlockTextures.cs 的常量和 CSV 的 DefaultTextureSlot 列。
 LAYOUT = {
     0: lambda: chest_front(METALS['copper']),
     1: lambda: chest_side(METALS['copper']),
     2: lambda: chest_top(METALS['copper']),
-    8: lambda: chest_front(METALS['iron']),
-    9: lambda: chest_side(METALS['iron']),
-    10: lambda: chest_top(METALS['iron']),
-    16: lambda: chest_front(METALS['diamond']),
-    17: lambda: chest_side(METALS['diamond']),
-    18: lambda: chest_top(METALS['diamond']),
-    24: hub_front,
-    25: hub_side,
-    26: hub_top,
-    32: lambda: upgrade_item(METALS['copper']),
-    33: lambda: upgrade_item(METALS['iron']),
-    34: lambda: upgrade_item(METALS['diamond']),
-    40: lambda: wireless(False),
-    41: lambda: wireless(True),
+    3: lambda: chest_front(METALS['iron']),
+    4: lambda: chest_side(METALS['iron']),
+    5: lambda: chest_top(METALS['iron']),
+    6: lambda: chest_front(METALS['diamond']),
+    7: lambda: chest_side(METALS['diamond']),
+    8: lambda: chest_top(METALS['diamond']),
+    9: hub_front,
+    10: hub_side,
+    11: hub_top,
+    12: lambda: upgrade_item(METALS['copper']),
+    13: lambda: upgrade_item(METALS['iron']),
+    14: lambda: upgrade_item(METALS['diamond']),
+    15: lambda: wireless(False),
+    16: lambda: wireless(True),
 }
 
 NAMES = {
     0: 'copper front', 1: 'copper side', 2: 'copper top',
-    8: 'iron front', 9: 'iron side', 10: 'iron top',
-    16: 'diamond front', 17: 'diamond side', 18: 'diamond top',
-    24: 'hub front', 25: 'hub side', 26: 'hub top',
-    32: 'upgrade copper', 33: 'upgrade iron', 34: 'upgrade diamond',
-    40: 'wireless unbound', 41: 'wireless bound',
+    3: 'iron front', 4: 'iron side', 5: 'iron top',
+    6: 'diamond front', 7: 'diamond side', 8: 'diamond top',
+    9: 'hub front', 10: 'hub side', 11: 'hub top',
+    12: 'upgrade copper', 13: 'upgrade iron', 14: 'upgrade diamond',
+    15: 'wireless unbound', 16: 'wireless bound',
 }
+
+
+def unused_tile():
+    """没用到的格子填暗品红棋盘格。
+
+    以前这里是透明的，一旦采样点算错就是一片纯黑——看不出是"UV 算错"还是"贴图没加载"。
+    填成一眼认得出的错误色，下次再采错立刻知道是哪一类问题。"""
+    tile = new_tile()
+    for y in range(TILE):
+        for x in range(TILE):
+            put(tile, x, y, (70, 20, 60) if (x // 4 + y // 4) % 2 == 0 else (46, 12, 40))
+    return tile
 
 
 def build():
     atlas = pngio.blank(COLS * TILE, ROWS * TILE)
+    marker = unused_tile()
+    for slot in range(COLS * ROWS):
+        if slot in LAYOUT:
+            continue
+        ox, oy = (slot % COLS) * TILE, (slot // COLS) * TILE
+        for y in range(TILE):
+            for x in range(TILE):
+                atlas[oy + y][ox + x] = marker[y][x]
     for slot, painter in LAYOUT.items():
         tile = painter()
         ox, oy = (slot % COLS) * TILE, (slot // COLS) * TILE

@@ -22,6 +22,16 @@ public static class StashStore
     private static StashWorldData? s_data;
     private static string? s_path;
 
+    /// <summary>
+    /// 留着 gameInfo 是为了**保存时再解析一次路径**。
+    ///
+    /// 之前只在 Load 里算一次路径：如果那一刻 <c>DirectoryName</c> 还是空的，
+    /// 就直接 return，<c>s_path</c> 永远是 null，之后每次 Save 都静默什么也不做，
+    /// 而且一句日志都不留。实机表现是"退出世界再进来，无线终端说绑定的终端不存在"——
+    /// 登记簿根本没落过盘。
+    /// </summary>
+    private static SubsystemGameInfo? s_gameInfo;
+
     public static StashWorldData Data => s_data ??= new StashWorldData();
 
     public static PlayerStashData ForCurrentPlayer() =>
@@ -32,16 +42,26 @@ public static class StashStore
     {
         s_data = null;
         s_path = null;
+        s_gameInfo = gameInfo;
 
-        if (gameInfo == null || string.IsNullOrEmpty(gameInfo.DirectoryName))
+        if (gameInfo == null)
         {
             s_data = new StashWorldData();
+            Log.Warning("[Stash] 没有 SubsystemGameInfo，世界数据这一轮不会落盘。");
             return;
         }
 
         string worldId = gameInfo.WorldSettings?.Name ?? string.Empty;
         string seed = gameInfo.WorldSeed.ToString();
-        s_path = Storage.CombinePaths(gameInfo.DirectoryName, FileName);
+        s_path = ResolvePath();
+
+        if (s_path == null)
+        {
+            // 目录名还没准备好也不要紧：Save 的时候会再解析一次。
+            s_data = new StashWorldData { WorldId = worldId, Seed = seed };
+            Log.Warning("[Stash] 世界目录名还是空的，读取推迟到保存时再解析路径。");
+            return;
+        }
 
         try
         {
@@ -71,12 +91,22 @@ public static class StashStore
         s_data ??= new StashWorldData();
         s_data.WorldId = worldId;
         s_data.Seed = seed;
+
+        Log.Information($"[Stash] 世界数据：{s_path}，存储终端登记 {s_data.Hubs.Hubs.Count} 条");
     }
 
     public static void Save()
     {
-        if (s_path == null || s_data == null)
+        if (s_data == null)
         {
+            return;
+        }
+
+        // 这里再解析一次：Load 那会儿目录名可能还没准备好。
+        s_path ??= ResolvePath();
+        if (s_path == null)
+        {
+            Log.Warning($"[Stash] 拿不到世界目录，{FileName} 没能保存。");
             return;
         }
 
@@ -96,6 +126,13 @@ public static class StashStore
     {
         s_data = null;
         s_path = null;
+        s_gameInfo = null;
+    }
+
+    private static string? ResolvePath()
+    {
+        string? directory = s_gameInfo?.DirectoryName;
+        return string.IsNullOrEmpty(directory) ? null : Storage.CombinePaths(directory, FileName);
     }
 
     private static void BackupMismatched()

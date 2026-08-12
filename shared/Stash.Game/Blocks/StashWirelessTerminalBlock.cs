@@ -30,8 +30,6 @@ public class StashWirelessTerminalBlock : CubeBlock
 
     private static bool HasTexture => StashBlockTextures.Texture != null;
 
-    public override int GetTextureSlotCount(int value) =>
-        HasTexture ? StashBlockTextures.SlotCount : base.GetTextureSlotCount(value);
 
     public override int GetFaceTextureSlot(int face, int value)
     {
