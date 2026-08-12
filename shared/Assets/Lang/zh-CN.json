@@ -36,19 +36,19 @@
       "CRDescription:0": "存储终端"
     },
     "ClothingBlock:38": {
-      "DisplayName": "铜背包",
-      "Description": "穿在身上的背包，16 格。拖到人物身上就背上，拖出来就取下。按 B 键或在物品栏界面点「背包」打开。",
-      "CRDescription:0": "铜背包"
+      "DisplayName": "铜行囊",
+      "Description": "穿在身上的行囊，16 格。拖到人物身上就背上，拖出来就取下。按 B 键打开；拿在手里右键可以直接背上并打开。",
+      "CRDescription:0": "铜行囊"
     },
     "ClothingBlock:39": {
-      "DisplayName": "铁背包",
-      "Description": "穿在身上的背包，24 格。用铜背包加一圈铁锭合成。",
-      "CRDescription:0": "铁背包"
+      "DisplayName": "铁行囊",
+      "Description": "穿在身上的行囊，24 格。用铜行囊加一圈铁锭合成。",
+      "CRDescription:0": "铁行囊"
     },
     "ClothingBlock:40": {
-      "DisplayName": "钻石背包",
-      "Description": "穿在身上的背包，32 格。用铁背包加一圈钻石合成。",
-      "CRDescription:0": "钻石背包"
+      "DisplayName": "钻石行囊",
+      "Description": "穿在身上的行囊，32 格。用铁行囊加一圈钻石合成。",
+      "CRDescription:0": "钻石行囊"
     },
     "StashWirelessTerminalBlock:0": {
       "DisplayName": "无线终端",

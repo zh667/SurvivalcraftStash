@@ -15,7 +15,7 @@ public static class StashText
 
     public static string SortChest => UseEnglish ? "Sort Chest" : "整理箱子";
 
-    public static string SortBackpack => UseEnglish ? "Sort Backpack" : "整理背包";
+    public static string SortBackpack => UseEnglish ? "Sort Backpack" : "整理行囊";
 
 
 
@@ -63,14 +63,14 @@ public static class StashText
 
     public static string BackpackName(StashBackpackTier tier) => tier.Key switch
     {
-        "copper" => UseEnglish ? "Copper Backpack" : "铜背包",
-        "iron" => UseEnglish ? "Iron Backpack" : "铁背包",
-        "diamond" => UseEnglish ? "Diamond Backpack" : "钻石背包",
-        _ => UseEnglish ? "Backpack" : "背包",
+        "copper" => UseEnglish ? "Copper Pack" : "铜行囊",
+        "iron" => UseEnglish ? "Iron Pack" : "铁行囊",
+        "diamond" => UseEnglish ? "Diamond Pack" : "钻石行囊",
+        _ => UseEnglish ? "Pack" : "行囊",
     };
 
     public static string BackpackNotWorn =>
-        UseEnglish ? "You are not wearing a backpack" : "你没有背着背包（拿在手里右键就能背上）";
+        UseEnglish ? "You are not wearing a pack" : "你没有背着行囊（拿在手里右键就能背上）";
 
     public static string BackpackWornNow(StashBackpackTier tier) =>
         UseEnglish ? $"{BackpackName(tier)} equipped" : $"背上了{BackpackName(tier)}";
@@ -78,20 +78,24 @@ public static class StashText
     /// <summary>背包是躯干最外层，外面还套着别的衣服时穿不上（原版 CanWearClothing 按层数比较）。</summary>
     public static string BackpackBlockedByClothes =>
         UseEnglish
-            ? "Take off your outer torso clothing first — the backpack goes on top"
-            : "背包要背在最外层，先把身上更外层的衣服脱掉";
+            ? "Take off your outer torso clothing first — the pack goes on top"
+            : "行囊要背在最外层，先把身上更外层的衣服脱掉";
 
     public static string BackpackAlreadyWorn =>
-        UseEnglish ? "You are already wearing a backpack" : "你已经背着一个背包了（先脱下来再换）";
+        UseEnglish ? "You are already wearing a pack" : "你已经背着一个行囊了（先脱下来再换）";
 
     public static string BackpackComponentMissing =>
-        UseEnglish ? "Backpack storage is unavailable in this world" : "这个世界里背包存储没挂上（换个新世界或重装 Mod 试试）";
+        UseEnglish ? "Pack storage is unavailable in this world" : "这个世界里行囊存储没挂上（换个新世界或重装 Mod 试试）";
 
-    public static string OpenBackpack => UseEnglish ? "Backpack" : "背包";
+    /// <summary>
+    /// **不要叫"背包"**：原版把玩家物品栏那块网格也标成"背包"（看衣物界面的标题），
+    /// 我们的按钮再叫背包，玩家分不清点了会切到哪儿。用"行囊"。
+    /// </summary>
+    public static string OpenBackpack => UseEnglish ? "Pack" : "行囊";
 
     /// <summary>原版界面那块网格只有 16 格，装不下整只背包，所以要分页。</summary>
     public static string BackpackPage(int page, int pages) =>
-        UseEnglish ? $"Backpack {page}/{pages}" : $"背包 {page}/{pages}";
+        UseEnglish ? $"Pack {page}/{pages}" : $"行囊 {page}/{pages}";
 
 
 
@@ -145,7 +149,7 @@ public static class StashText
 
     public static Func<int, string> TerminalStored => count => UseEnglish ? $"Stored {count}" : $"存入 {count} 个";
 
-    public static string TerminalNoRoom => UseEnglish ? "No room in your inventory" : "背包装不下了";
+    public static string TerminalNoRoom => UseEnglish ? "No room in your inventory" : "物品栏装不下了";
 
     public static string TerminalFull => UseEnglish ? "Nothing could be stored" : "没有能存进去的东西";
 

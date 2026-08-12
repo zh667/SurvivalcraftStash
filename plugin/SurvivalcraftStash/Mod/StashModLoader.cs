@@ -23,12 +23,8 @@ public class StashModLoader : ModLoader
         ModsManager.RegisterHook("GuiUpdate", this);
         ModsManager.RegisterHook("OnProjectLoaded", this);
         ModsManager.RegisterHook("OnProjectDisposed", this);
-        ModsManager.RegisterHook("ClothingWidgetOpen", this);
         Log.Information($"[Stash] scmod {Version} 已加载");
     }
-
-    public override void ClothingWidgetOpen(ComponentGui componentGui, ClothingWidget clothingWidget) =>
-        StashClothingButton.Attach(componentGui, clothingWidget);
 
     /// <summary>给背包格子改妆：图标从背后取景、不显示耐久条。内部有节流，不是每帧都扫。</summary>
     public override void GuiUpdate(ComponentGui componentGui) => StashSlotDresser.Update(componentGui);

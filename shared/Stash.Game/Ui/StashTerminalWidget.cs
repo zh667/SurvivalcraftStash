@@ -148,6 +148,7 @@ public sealed class StashTerminalWidget : CanvasWidget
 
         BindSide();
         Refresh();
+        m_statusLabel.Text = m_status;
     }
 
     private void AddLabel(string text, Vector2 position)
@@ -308,7 +309,10 @@ public sealed class StashTerminalWidget : CanvasWidget
 
                 int value = inventory.GetSlotValue(slot);
                 Block block = BlocksManager.Blocks[Terrain.ExtractContents(value)];
-                if (query.Matches(block.GetDisplayName(terrain, value), block.GetCategory(value)))
+                if (query.Matches(
+                    block.GetDisplayName(terrain, value),
+                    block.GetCategory(value),
+                    EnglishIdOf(block)))
                 {
                     filled.Add((inventory, slot, value, count));
                 }
@@ -346,9 +350,19 @@ public sealed class StashTerminalWidget : CanvasWidget
             }
         }
 
+        // 只更新缓存的文本，**不要**直接写 Label。
+        // Update() 每帧按"搜索框有没有焦点"决定显示哪一句；这里再写一次的话，
+        // 每 0.4 秒刷新一次就会插进来一帧别的字——看起来就是底下那行白字一直在闪。
         m_status = StashText.TerminalStatus(m_containers.Count, filled.Count, m_page + 1, maxPage + 1);
-        m_statusLabel.Text = m_status;
     }
+
+    /// <summary>
+    /// 拿来当"英文名"用的标识。
+    ///
+    /// 游戏运行时只加载当前语言，拿不到英文显示名；但 <c>CraftingId</c>（"copperingot"）
+    /// 和类名（"CopperIngotBlock"）本来就是英文单词拼出来的，合起来足够玩家用英文搜。
+    /// </summary>
+    private static string EnglishIdOf(Block block) => block.CraftingId + " " + block.GetType().Name;
 
     private static int CompareForDisplay(
         (IInventory Inventory, int Slot, int Value, int Count) a,
