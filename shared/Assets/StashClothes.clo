@@ -8,18 +8,28 @@
   Assets/Models/OuterClothingMale.dae 里量出来的——背面 x27..41 y15..35 画包体，
   正面 x4..18 画肩带和胸带，两侧和顶面接上，绕身体一圈对得齐。
   真正"背上鼓一个包"的立体模型要另挂渲染，排在后面做。
+
+  Layer=5：原版躯干槽的层数是 0~4，护甲（铁/钻石/铜胸甲、木甲、皮衣）全在 4。
+  背包取 5 就永远能穿在最外层，和任何衣服/护甲共存——躯干槽本来存的就是一个 List<int>，
+  可以叠穿，只是 CanWearClothing 要求"新的层数 > 当前最外层"。
+  贴图上除了包体和背带全是透明的，所以下面那层护甲照常露出来，不会糊成一片。
+
+  Sturdiness=1000000：背包不该有耐久。磨损速度是 20 * Sturdiness 游戏秒掉 1 点，
+  取这么大等于永不磨损。（物品栏那条耐久条是 ClothingBlock 整个方块的属性，
+  所有衣物共用一个 Durability=15，没法只给背包关掉；但它会一直是满的。）
+  ArmorProtection=0：背包不提供防护，占了最外层也不该顶替护甲的作用。
 -->
 <Mod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ClothingData Class="Game.ClothingData" Index="38" DisplayName="[ClothingBlock:38]" Description="[ClothingBlock:38]"
-                Slot="Torso" ArmorProtection="0" Sturdiness="200" Insulation="0.2" MovementSpeedFactor="1"
-                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="2"
+                Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.2" MovementSpeedFactor="1"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="5"
                 PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackCopper" ImpactSoundsFolder=""/>
   <ClothingData Class="Game.ClothingData" Index="39" DisplayName="[ClothingBlock:39]" Description="[ClothingBlock:39]"
-                Slot="Torso" ArmorProtection="0" Sturdiness="300" Insulation="0.3" MovementSpeedFactor="1"
-                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="2"
+                Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.3" MovementSpeedFactor="1"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="5"
                 PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackIron" ImpactSoundsFolder=""/>
   <ClothingData Class="Game.ClothingData" Index="40" DisplayName="[ClothingBlock:40]" Description="[ClothingBlock:40]"
-                Slot="Torso" ArmorProtection="0" Sturdiness="500" Insulation="0.2" MovementSpeedFactor="1"
-                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="2"
+                Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.2" MovementSpeedFactor="1"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="5"
                 PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackDiamond" ImpactSoundsFolder=""/>
 </Mod>

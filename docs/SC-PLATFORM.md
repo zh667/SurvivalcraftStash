@@ -250,3 +250,30 @@ UV 仍然按 `格号 % 列数 / 格号 / 列数` 算（`BlocksManager.cs:571`）
 后面按奇偶分半交织——偶数位取前半段、奇数位取后半段。
 解法在 `SurvivalCraftModEntity.GetDecipherStream`。
 （`.scmod`/`.netmod` 用的是另外两个 HeadingCode，解法在 `ModsManager.GetDecipherStream`。）
+
+## 5.6 衣物：层数、磨损、图标取景
+
+- **躯干槽能叠穿**：`ComponentClothing` 每个槽存的是 `List<int>`，不是单件。
+  能不能再叠一件由 `CanWearClothing` 决定：**新的 Layer 必须大于当前最外层**。
+  原版躯干的 Layer 是 0~4，护甲（铁/钻石/铜胸甲、木甲、皮衣）全在 4。
+  → 想做一件"和护甲共存、永远穿在最外面"的衣物，取 **Layer 5** 即可；
+  贴图上不该盖住的地方留透明，下面那层照常露出来。
+
+- **磨损速度 = `20 * Sturdiness` 游戏秒掉 1 点**（湿身时 `10 * Sturdiness`），
+  见 `ComponentClothing.Update`；创造模式和关闭生存机制时不磨损。
+  → 想做"不会坏"的衣物，把 `Sturdiness` 拉到极大即可。
+
+- **耐久条关不掉**：`InventorySlotWidget` 的判据是 `block.Durability >= 0`，
+  而所有衣物共用 `ClothingBlock`（索引 203）的 `Durability = 15`，**没有逐件的开关**。
+  不磨损的衣物只能表现为"耐久条一直是满的"。
+
+- **图标取景是逐件可改的**：`BlockIconWidget` 用
+  `Matrix.CreateLookAt(block.GetIconViewOffset(Value, env), Vector3.Zero, Vector3.UnitY)`，
+  而 `GetIconViewOffset(int value, ...)` 是 virtual **且带 value**。
+  原版 `ClothingBlock` 的 `DefaultIconViewOffset` 是 `(-1, 1, -1)`（看到胸前）；
+  水平取反成 `(1, 1, 1)` 就是从背后看。
+
+- **顶替原版方块实例是可行的**（联机版）：`BlocksManager.Initialize` 按 mod 顺序执行
+  `m_blocks[block.BlockIndex] = block`，原版是 system mod 排在最前，
+  所以自己写一个 `public new static int Index = 203` 的子类就能覆盖它，其余行为继承。
+  代价是全局唯一——多个 Mod 抢同一个索引时最后加载的赢。**插件版没验证过，别照搬。**

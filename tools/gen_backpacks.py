@@ -104,36 +104,79 @@ def buckle(img, x, y, c):
     put(img, x + 1, y + 1, c['metal_dark'])
 
 
+def bulge(img, x0, y0, x1, y1, c):
+    """把一块布面压出"鼓起来"的明暗。
+
+    躯干是个扁盒子，几何上鼓不起来，只能靠明暗骗眼睛：
+    左上角最亮、右下角最暗，中间按到中心的距离平滑过渡，边缘再压一圈暗边。
+    实机反馈"背后的包可以鼓一些"，之前只有平涂 + 一圈描边，看着是块布不是个包。
+    """
+    cx = (x0 + x1) / 2.0
+    cy = (y0 + y1) / 2.0
+    rx = max(1.0, (x1 - x0) / 2.0)
+    ry = max(1.0, (y1 - y0) / 2.0)
+
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            # 归一化到 [-1,1]，算一个"离中心多远"
+            nx = (x - cx) / rx
+            ny = (y - cy) / ry
+            d = min(1.0, (nx * nx + ny * ny) ** 0.5)
+
+            # 光从左上来：左上加亮、右下压暗
+            lit = -(nx + ny) * 0.5
+            level = lit * (1.0 - d * 0.35) - d * d * 0.55
+
+            base = c['cloth']
+            if level > 0.30:
+                col = c['cloth_light']
+            elif level > 0.08:
+                col = tuple((a + b) // 2 for a, b in zip(base, c['cloth_light']))
+            elif level > -0.18:
+                col = base
+            elif level > -0.45:
+                col = tuple((a + b) // 2 for a, b in zip(base, c['cloth_dark']))
+            else:
+                col = c['cloth_dark']
+
+            if noise(x, y, 41) > 0.88:                     # 一点织物噪点，别太平
+                col = tuple(min(255, v + 6) for v in col)
+            put(img, x, y, col)
+
+
 def build(c):
     img = pngio.blank(SIZE, SIZE)
 
-    # ── 背面：包体本身 ────────────────────────────────────────────
+    # ── 背面：包体本身。占满整块背面区域，越满越像个鼓的包 ────────
     bx0, by0, bx1, by1 = BACK
-    px0, py0, px1, py1 = bx0 + 1, by0 + 2, bx1 - 1, by1
-    cloth(img, px0, py0, px1, py1, c, seed=5)
+    px0, py0, px1, py1 = bx0, by0 + 1, bx1, by1
+    bulge(img, px0, py0, px1, py1, c)
+
     outline(img, px0, py0, px1, py1, c['cloth_dark'])
 
-    flap_bottom = py0 + 6                                   # 顶盖
-    cloth(img, px0, py0, px1, flap_bottom, c, seed=9)
-    for x in range(px0, px1 + 1):
-        put(img, x, py0, c['cloth_light'])
-        put(img, x, flap_bottom, c['cloth_dark'])
+    # 四角各挖掉一个像素，方方正正的块就成了圆角包。
+    # 一定要在 outline **之后**做，否则描边又把角画回去了。
+    for ox, oy in ((px0, py0), (px1, py0), (px0, py1), (px1, py1)):
+        put(img, ox, oy, (0, 0, 0, 0))
+    for x in range(px0 + 2, px1 - 1):                       # 顶沿一道高光，强化"向外鼓"
+        put(img, x, py0 + 1, c['cloth_light'])
 
-    for sx in (px0 + 2, px1 - 3):                           # 两条扣带，从顶盖压下来
+    flap_bottom = py0 + 7                                   # 顶盖：比包体略亮，下沿一条深影
+    for x in range(px0 + 1, px1):
+        put(img, x, flap_bottom, c['cloth_dark'])
+        put(img, x, flap_bottom + 1, tuple((a + b) // 2 for a, b in zip(c['cloth'], c['cloth_dark'])))
+
+    for sx in (px0 + 3, px1 - 4):                           # 两条扣带，从顶盖压下来
         rect(img, sx, py0 + 1, sx + 1, flap_bottom + 4, c['cloth_dark'])
-        put(img, sx, py0 + 1, c['cloth_light'])
+        put(img, sx, py0 + 2, c['cloth_light'])
         buckle(img, sx, flap_bottom + 3, c)
 
-    pocket = (px0 + 2, flap_bottom + 7, px1 - 2, py1 - 1)   # 前袋
-    cloth(img, *pocket, c, seed=13)
+    pocket = (px0 + 3, flap_bottom + 7, px1 - 3, py1 - 2)   # 前袋：自己也鼓一块
+    bulge(img, *pocket, c)
     outline(img, *pocket, c['cloth_dark'])
-    for x in range(pocket[0], pocket[2] + 1):
+    for x in range(pocket[0] + 1, pocket[2]):
         put(img, x, pocket[1], c['cloth_light'])
     buckle(img, (pocket[0] + pocket[2]) // 2, pocket[1] - 2, c)
-
-    for y in range(py0 + 1, py1):                           # 两侧压条，让包体看着有厚度
-        put(img, px0, y, c['cloth_dark'])
-        put(img, px1, y, c['cloth_dark'])
 
     # ── 正面：两条肩带 + 一条胸带 ─────────────────────────────────
     fx0, fy0, fx1, fy1 = FRONT
@@ -151,10 +194,12 @@ def build(c):
 
     # ── 侧面：后沿露出一点包体，上半截是肩带绕过来的部分 ──────────
     lx0, ly0, lx1, ly1 = SIDE_L
-    cloth(img, lx1 - 1, ly0 + 1, lx1, ly1, c, seed=21)       # 左侧后沿（u 大的一头）
-    cloth(img, lx0, ly0, lx1, ly0 + 3, c, seed=23)           # 肩带
+    bulge(img, lx1 - 3, ly0 + 1, lx1, ly1 - 1, c)            # 左侧后沿（u 大的一头）：3 格厚
+    outline(img, lx1 - 3, ly0 + 1, lx1, ly1 - 1, c['cloth_dark'])
+    cloth(img, lx0, ly0, lx1, ly0 + 3, c, seed=23)           # 肩带绕过肩膀
     rx0, ry0, rx1, ry1 = SIDE_R
-    cloth(img, rx0, ry0 + 1, rx0 + 1, ry1, c, seed=21)       # 右侧后沿（u 小的一头）
+    bulge(img, rx0, ry0 + 1, rx0 + 3, ry1 - 1, c)            # 右侧后沿（u 小的一头）
+    outline(img, rx0, ry0 + 1, rx0 + 3, ry1 - 1, c['cloth_dark'])
     cloth(img, rx0, ry0, rx1, ry0 + 3, c, seed=23)
 
     # ── 顶面：两个半边的中间朝后，画成肩上压过的带子 ──────────────

@@ -60,7 +60,24 @@ public static class StashOperations
 
         var plan = new StashPlan();
         plan.Add(container.Inventory, translated);
-        return Execute(plan) ? translated.Count : 0;
+        if (!Execute(plan))
+        {
+            return 0;
+        }
+
+        // 只数**最后装着东西**的格子。
+        // translated 里同时包含"东西搬进来"和"原地方腾空"两种赋值，
+        // 两边都算就会差不多翻一倍（实机反馈"整理好像会翻倍计算"）。
+        int filled = 0;
+        foreach (SlotAssignment assignment in translated)
+        {
+            if (assignment.Value != 0 && assignment.Count > 0)
+            {
+                filled++;
+            }
+        }
+
+        return filled;
     }
 
     public static int Deposit(PanelContainer source, PanelContainer target, TransferMode mode)
