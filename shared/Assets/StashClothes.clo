@@ -4,19 +4,22 @@
   贴图走衣物自己的独立贴图，不受方块图集限制——联机版同样有得看。
   索引必须紧接原版最后一个（37）连续往下排：联机版的 m_clothingData 是按下标的数组，
   留空洞会让 GetCreativeValues() 的 OrderBy 读到 null，进世界时直接崩（原版的坑，我们踩过一次）。
-  暂时复用原版衣物贴图，"背上鼓一个包"要自己挂模型渲染，排在后面做。
+  贴图是自己的（tools/gen_backpacks.py 生成）：UV 区块从本体的
+  Assets/Models/OuterClothingMale.dae 里量出来的——背面 x27..41 y15..35 画包体，
+  正面 x4..18 画肩带和胸带，两侧和顶面接上，绕身体一圈对得齐。
+  真正"背上鼓一个包"的立体模型要另挂渲染，排在后面做。
 -->
 <Mod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ClothingData Class="Game.ClothingData" Index="38" DisplayName="[ClothingBlock:38]" Description="[ClothingBlock:38]"
                 Slot="Torso" ArmorProtection="0" Sturdiness="200" Insulation="0.2" MovementSpeedFactor="1"
                 SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="2"
-                PlayerLevelRequired="1" TextureName="Textures/Clothing/CottonSweater" ImpactSoundsFolder=""/>
+                PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackCopper" ImpactSoundsFolder=""/>
   <ClothingData Class="Game.ClothingData" Index="39" DisplayName="[ClothingBlock:39]" Description="[ClothingBlock:39]"
                 Slot="Torso" ArmorProtection="0" Sturdiness="300" Insulation="0.3" MovementSpeedFactor="1"
                 SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="2"
-                PlayerLevelRequired="1" TextureName="Textures/Clothing/LeatherJerkin" ImpactSoundsFolder=""/>
+                PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackIron" ImpactSoundsFolder=""/>
   <ClothingData Class="Game.ClothingData" Index="40" DisplayName="[ClothingBlock:40]" Description="[ClothingBlock:40]"
                 Slot="Torso" ArmorProtection="0" Sturdiness="500" Insulation="0.2" MovementSpeedFactor="1"
                 SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="2"
-                PlayerLevelRequired="1" TextureName="Textures/Clothing/ChainMail" ImpactSoundsFolder=""/>
+                PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackDiamond" ImpactSoundsFolder=""/>
 </Mod>

@@ -44,17 +44,18 @@ ContentsMask = 1023, LightShift = 10, DataShift = 14, DataMask = -16384
 | 能力 | 联机版 netmod | 插件版 scmod (API 1.9.2.1) |
 |---|---|---|
 | 加新方块 | ✅ `Block` 子类 + `public static int Index`（`ModEntity.LoadDllLogic`） | ✅ 同 |
-| 方块贴图 | ❌ 只有一张 256 格公共图集，无逐方块贴图接口 | ✅ `Block.GetDefaultTexture(value)` 可给每个方块自己的贴图 |
+| 方块贴图 | ✅ `TerrainGeometry.GetGeometry(Texture2D)` 按贴图分批（**见 5.5，这一行原先写错了**） | ✅ 同，另有 `Block.GetDefaultTexture(value)` |
 | 自定义衣物槽 | ❌ `ClothingSlot` 是 enum，写死 4 格 | ✅ `ClothingSlot.AddClothingSlot(name)` |
 | Harmony | ❌（未随包提供） | ✅ 随包 `0Harmony.dll` |
 | 自定义网络包 | ✅ `PackageManager.RegisterPackage` | 不适用（单人） |
 | UI 注入钩子 | `OnWidgetConstruct` / `OnModalPanelWidgetSet` / `GuiUpdate` | 以上全有，另有 `OnWidgetContentsLoaded` 等更多钩子 |
 | 方块索引池 | 1024 个，原版占 258 个（0~263） | 同 |
 
-> **关键推论（已按 5.1 的发现修正）**：贴图差异一度看起来是两版最大的鸿沟，
-> 但两条路绕开了它——分级方块用**染色**（复用原版贴图 × 色调），背包做成**衣物**（衣物贴图本来就独立于图集）。
-> 所以"替换整张 `Textures/Blocks`"的方案作废：世界设置里的「方块贴图」（`.scbtex` 材质包）
+> **关键推论（5.5 又推翻了一次，以 5.5 为准）**：
+> "替换整张 `Textures/Blocks`"的方案作废——世界设置里的「方块贴图」（`.scbtex` 材质包）
 > 会让 `SubsystemBlocksTexture` 直接加载玩家选的那张整图，我们塞进去的格子会全部失效。
+> 但**不需要**因此退回染色：`TerrainGeometry.GetGeometry(Texture2D)` 允许方块把自己的顶点
+> 写进绑着自家贴图的批次，两个平台都有。所以现在是**自带图集**，染色只作为拿不到贴图时的退路。
 
 ## 5. 其它可用的原版机制
 
@@ -183,3 +184,53 @@ RootWidget.WidgetsHierarchyInput.Update()   // m_isCleared = false，重算 Clic
 - 联机版世界文件夹名会被回收复用（见 SCTM 经验）→ 世界侧注册表必须带**种子/世界 GUID 校验**，否则串档。
 - `AddNetSlotItems` 在"槽位已有不同物品"或"超过容量"时返回 false 而不是部分插入 → 自己实现插入要处理部分插入。
 - 创造模式可复制物品栈：将来做 B 方案储物袋时，实例 ID 存在 data 位，**同 ID 多份**必须在打开时做写时复制（split-on-open），否则两个袋子共享一份内容。（A 方案的背包按玩家索引，没有这个问题。）
+
+## 5.5 自定义贴图：三条通道都能走（一开始判断错了，这里改正）
+
+**① 世界里的方块面 —— 能有自己的贴图。**
+地形几何是**按贴图分批**的：
+
+```csharp
+public Dictionary<Texture2D, TerrainGeometry[]> Draws;
+public TerrainGeometry GetGeometry(Texture2D texture);
+```
+
+`GenerateTerrainVertices` 里把顶点写进 `geometry.GetGeometry(自己的贴图).OpaqueSubsetsByFace`，
+那一批就用自己的贴图渲染。**联机版和插件版（SCAPI 1.9.2.1）都有这个方法。**
+所以不用碰全局的 `Textures/Blocks`——那张图玩家的材质包也在改，碰了必然打架。
+
+UV 仍然按 `格号 % 列数 / 格号 / 列数` 算（`BlocksManager.cs:571`），
+所以自家图集要重写 `GetTextureSlotCount`（返回列数）和 `GetFaceTextureSlot`（返回格号）。
+
+**② 物品图标 / 手持模型**：`BlocksManager.DrawCubeBlock(..., Texture2D texture)` 和
+`DrawFlatBlock(..., Texture2D texture)` 都有带贴图的重载，两个平台都有。
+`DrawFlatBlock` 取的是 `GetFaceTextureSlot(-1, value)`，写 `GetFaceTextureSlot` 时要考虑 face = -1。
+
+**③ 衣物贴图**：`.clo` 的 `TextureName` 直接走 `ContentManager.Get<Texture2D>`，完全由模组提供。
+
+**资源怎么进包**：`.netmod`/`.scmod` 里 `Assets/` 下的所有文件都会被
+`ModEntity.InitResources` 注册进 `ContentManager`，键是去掉 `Assets/` 前缀的路径。
+`ContentManager.Add` 是**覆盖**语义，所以理论上能顶掉原版资源——正因如此，别去顶 `Textures/Blocks`。
+
+### 尺寸与 UV 实测
+
+- 方块图集 `Textures/Blocks.png` = **512×512**，16×16 格，每格 **32×32**
+- 衣物贴图 = **64×64** RGBA（`CharacterSkinsManager.ValidateCharacterSkin` 只要求 2 的幂、≤1024）
+- 躯干（`Assets/Models/OuterClothingMale.dae` 的 Body 网格，把 COLLADA 的 v 翻成自上而下）：
+
+  | 面 | UV 区域 | 备注 |
+  |---|---|---|
+  | 正面 | x 4..18, y 15..35 | 法线 +Y。用 LeatherJerkin 验证：有系带花纹的是正面 |
+  | 背面 | x 27..41, y 15..35 | 背包本体画这里 |
+  | 左侧 | x 46..52, y 16..35 | u=46 前沿，u=52 后沿 |
+  | 右侧 | x 55..61, y 16..35 | u=55 后沿，u=61 前沿 |
+  | 顶面 | x 47..60, y 12..16 | 两个半边的中间（u≈50..57）朝后 |
+
+  躯干盒子 14 宽 × 6 深 × 20 高。
+
+### 本体资源怎么解出来
+
+`Content.scpak` 是加壳的 zip：头部是 `再乱改就跑路，谁也别想玩！`（UTF-8），
+后面按奇偶分半交织——偶数位取前半段、奇数位取后半段。
+解法在 `SurvivalCraftModEntity.GetDecipherStream`。
+（`.scmod`/`.netmod` 用的是另外两个 HeadingCode，解法在 `ModsManager.GetDecipherStream`。）

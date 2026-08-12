@@ -80,28 +80,47 @@ public static class StashUiInjector
     /// <summary>
     /// 把面板加高一条，按钮就落在新腾出来的空白里而不是压在格子上。
     ///
-    /// 原版这些界面的根节点都是 <see cref="CanvasWidget"/> 且 XML 里写死了 <c>Size</c>，
-    /// 而 <c>CanvasWidget.MeasureOverride</c> 在 <c>Size >= 0</c> 时直接用它当 DesiredSize，
-    /// 子控件又是按显式坐标（左上角锚定）摆的，所以加高只会在底部多出一块空白，
-    /// 已有的格子不会动。
+    /// **原版面板的尺寸不在根节点上**。看 ChestWidget.xml / FullInventoryWidget.xml：
+    /// <code>
+    /// &lt;ChestWidget&gt;
+    ///   &lt;BevelledRectangleWidget Size="614, 382" BevelSize="3" /&gt;   ← 尺寸在这
+    ///   &lt;GridPanelWidget CanvasWidget.Position="12, 52" … /&gt;
+    /// &lt;/ChestWidget&gt;
+    /// </code>
+    /// 根节点是个没写 Size 的 CanvasWidget（Size = -1 自适应），
+    /// <c>CanvasWidget.MeasureOverride</c> 会取所有子控件"位置 + 期望尺寸"的最大值——
+    /// 也就是那块底板撑出来的 614×382。
+    /// 所以要加高的是**底板**，改根节点的 Size 没用（上一版就是这么写的，等于没加）。
     ///
-    /// 少数界面没写死 Size（自适应）——那种情况加不了，退回"贴底边"，可能压住一点点。
+    /// 子控件都是按显式坐标（左上角锚定）摆的，底板变高只会在下面多出一块空白，格子不会动。
     /// </summary>
     private static void MakeRoomForBar(ContainerWidget host)
     {
-        if (host is not CanvasWidget canvas)
+        // 面板底板：取最大的那块 BevelledRectangleWidget（一个面板通常就一块）。
+        BevelledRectangleWidget? background = null;
+        foreach (Widget child in host.Children)
         {
-            return;
+            if (child is BevelledRectangleWidget rectangle
+                && (background == null || rectangle.Size.Y > background.Size.Y))
+            {
+                background = rectangle;
+            }
         }
 
-        Vector2 size = canvas.Size;
-        if (size.Y >= 0f)
+        if (background != null && background.Size.Y >= 0f)
         {
-            canvas.Size = new Vector2(size.X, size.Y + StashButtonBar.BarHeight);
+            background.Size = new Vector2(background.Size.X, background.Size.Y + StashButtonBar.BarHeight);
         }
-        else
+
+        // 根节点自己写了 Size 的（我们自己的界面就是），也要跟着长高，
+        // 否则 MeasureOverride 会用根节点那个偏小的值把底板裁掉。
+        if (host is CanvasWidget canvas && canvas.Size.Y >= 0f)
         {
-            Log.Warning($"[Stash] {host.GetType().Name} 的 Size 是自适应的（{size}），整理按钮只能贴底边");
+            canvas.Size = new Vector2(canvas.Size.X, canvas.Size.Y + StashButtonBar.BarHeight);
+        }
+        else if (background == null)
+        {
+            Log.Warning($"[Stash] {host.GetType().Name} 既没有底板也没写 Size，整理按钮只能贴底边");
         }
     }
 

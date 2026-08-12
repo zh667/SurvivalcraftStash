@@ -28,7 +28,21 @@ public class StashWirelessTerminalBlock : CubeBlock
     /// </summary>
     public const int DarkTextureSlot = 62;
 
-    public override int GetFaceTextureSlot(int face, int value) => DarkTextureSlot;
+    private static bool HasTexture => StashBlockTextures.Texture != null;
+
+    public override int GetTextureSlotCount(int value) =>
+        HasTexture ? StashBlockTextures.SlotCount : base.GetTextureSlotCount(value);
+
+    public override int GetFaceTextureSlot(int face, int value)
+    {
+        if (!HasTexture)
+        {
+            return DarkTextureSlot;
+        }
+
+        // 一台手持机：屏幕亮青 = 已绑定，暗红 = 未绑定。两档各一格贴图，不靠色调乘。
+        return GetBoundHubId(value) > 0 ? StashBlockTextures.WirelessBound : StashBlockTextures.WirelessUnbound;
+    }
 
     public override void GenerateTerrainVertices(
         BlockGeometryGenerator generator,
@@ -36,8 +50,17 @@ public class StashWirelessTerminalBlock : CubeBlock
         int value,
         int x,
         int y,
-        int z) =>
+        int z)
+    {
+        if (StashBlockTextures.Texture is { } texture)
+        {
+            generator.GenerateCubeVertices(
+                this, value, x, y, z, Color.White, geometry.GetGeometry(texture).OpaqueSubsetsByFace);
+            return;
+        }
+
         generator.GenerateCubeVertices(this, value, x, y, z, TintOf(value), geometry.OpaqueSubsetsByFace);
+    }
 
     public override void DrawBlock(
         PrimitivesRenderer3D primitivesRenderer,
@@ -47,6 +70,13 @@ public class StashWirelessTerminalBlock : CubeBlock
         ref Matrix matrix,
         DrawBlockEnvironmentData environmentData)
     {
+        if (StashBlockTextures.Texture is { } texture)
+        {
+            BlocksManager.DrawFlatBlock(
+                primitivesRenderer, value, size, ref matrix, texture, color, isEmissive: false, environmentData);
+            return;
+        }
+
         Color tinted = color * TintOf(value);
         BlocksManager.DrawCubeBlock(primitivesRenderer, value, new Vector3(size), ref matrix, tinted, tinted, environmentData);
     }

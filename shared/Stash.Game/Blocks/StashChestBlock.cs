@@ -7,9 +7,12 @@ namespace Stash.Game;
 /// <summary>
 /// 分级箱子方块。
 ///
-/// **不新增任何贴图**：复用原版箱子的图集槽位（25/26/27/42），按档位乘一个色调。
-/// 这条路子是照着原版 <c>PaintedCubeBlock</c> 来的——它就是"同一张贴图 × 一个 Color"，
-/// 联机版没有逐方块贴图接口，这样两版才能长得一样，也不会被玩家选的方块材质包冲掉。
+/// 贴图走**我们自己的图集**（见 <see cref="StashBlockTextures"/>），不再是"原版箱子 × 一个色调"。
+/// 色调那套的问题是它把木头也一起染了，三档看着像同一个箱子换了滤镜；
+/// 现在每档有自己的一套面：木箱本体不动，四边包一圈该档金属的边框加铆钉——
+/// 这是 IronChest 的做法，一眼能看出等级，又没脱离 SC 的木箱语言。
+///
+/// 拿不到贴图时（资源没打进包之类）自动退回原版箱子的槽位，只是难看，不会崩。
 ///
 /// data 位沿用原版箱子的用法：0~3 表示朝向。
 /// </summary>
@@ -17,9 +20,36 @@ public abstract class StashChestBlock : CubeBlock
 {
     public abstract StashChestTier Tier { get; }
 
+    /// <summary>这一档的三个面在自家图集里的格号。</summary>
+    protected abstract (int Front, int Side, int Top) Slots { get; }
+
+    private static bool HasTexture => StashBlockTextures.Texture != null;
+
+    public override int GetTextureSlotCount(int value) =>
+        HasTexture ? StashBlockTextures.SlotCount : base.GetTextureSlotCount(value);
+
     public override int GetFaceTextureSlot(int face, int value)
     {
-        // 与原版 ChestBlock 完全一致：顶/底用 42，正面 27，右侧 26，其余 25，按 data 旋转。
+        if (!HasTexture)
+        {
+            return VanillaFaceSlot(face, value);
+        }
+
+        (int front, int side, int top) = Slots;
+        if (face is 4 or 5)
+        {
+            return top;
+        }
+
+        // 正面朝向由 data 决定，其余四面用侧面那格。
+        int data = Terrain.ExtractData(value);
+        int frontFace = data switch { 0 => 0, 1 => 1, 2 => 2, _ => 3 };
+        return face == frontFace ? front : side;
+    }
+
+    /// <summary>退路：原版 ChestBlock 的槽位（顶/底 42，正面 27，右侧 26，其余 25）。</summary>
+    private static int VanillaFaceSlot(int face, int value)
+    {
         if (face is 4 or 5)
         {
             return 42;
@@ -41,8 +71,19 @@ public abstract class StashChestBlock : CubeBlock
         int value,
         int x,
         int y,
-        int z) =>
+        int z)
+    {
+        if (StashBlockTextures.Texture is { } texture)
+        {
+            // 关键：把顶点写进"绑着我们贴图"的那一批，而不是默认那批。
+            generator.GenerateCubeVertices(
+                this, value, x, y, z, Color.White,
+                geometry.GetGeometry(texture).OpaqueSubsetsByFace);
+            return;
+        }
+
         generator.GenerateCubeVertices(this, value, x, y, z, Tier.Tint, geometry.OpaqueSubsetsByFace);
+    }
 
     public override void DrawBlock(
         PrimitivesRenderer3D primitivesRenderer,
@@ -52,6 +93,13 @@ public abstract class StashChestBlock : CubeBlock
         ref Matrix matrix,
         DrawBlockEnvironmentData environmentData)
     {
+        if (StashBlockTextures.Texture is { } texture)
+        {
+            BlocksManager.DrawCubeBlock(
+                primitivesRenderer, value, new Vector3(size), ref matrix, color, color, environmentData, texture);
+            return;
+        }
+
         Color tinted = color * Tier.Tint;
         BlocksManager.DrawCubeBlock(primitivesRenderer, value, new Vector3(size), ref matrix, tinted, tinted, environmentData);
     }
@@ -99,6 +147,11 @@ public class StashCopperChestBlock : StashChestBlock
     public static int Index = StashChestTiers.CopperChestIndex;
 
     public override StashChestTier Tier => StashChestTiers.Copper;
+
+    protected override (int Front, int Side, int Top) Slots => (
+        StashBlockTextures.CopperChestFront,
+        StashBlockTextures.CopperChestSide,
+        StashBlockTextures.CopperChestTop);
 }
 
 public class StashIronChestBlock : StashChestBlock
@@ -106,6 +159,11 @@ public class StashIronChestBlock : StashChestBlock
     public static int Index = StashChestTiers.IronChestIndex;
 
     public override StashChestTier Tier => StashChestTiers.Iron;
+
+    protected override (int Front, int Side, int Top) Slots => (
+        StashBlockTextures.IronChestFront,
+        StashBlockTextures.IronChestSide,
+        StashBlockTextures.IronChestTop);
 }
 
 public class StashDiamondChestBlock : StashChestBlock
@@ -113,5 +171,10 @@ public class StashDiamondChestBlock : StashChestBlock
     public static int Index = StashChestTiers.DiamondChestIndex;
 
     public override StashChestTier Tier => StashChestTiers.Diamond;
+
+    protected override (int Front, int Side, int Top) Slots => (
+        StashBlockTextures.DiamondChestFront,
+        StashBlockTextures.DiamondChestSide,
+        StashBlockTextures.DiamondChestTop);
 }
 
