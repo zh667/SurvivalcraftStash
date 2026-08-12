@@ -29,13 +29,16 @@ namespace Stash.Game;
 public static class StashSlotDresser
 {
     /// <summary>隔几帧扫一次。界面变化不需要逐帧跟，四分之一秒级别足够。</summary>
-    private const int FrameInterval = 15;
+    private const int FrameInterval = 5;
 
     /// <summary>从背后看的机位。原版 ClothingBlock 是 (-1, 1, -1)（看到胸前），水平取反即背面。</summary>
     private static readonly Matrix FromBehind =
         Matrix.CreateLookAt(new Vector3(1f, 1f, 1f), Vector3.Zero, Vector3.UnitY);
 
     private static int s_countdown;
+
+    /// <summary>被我们关掉耐久条的格子。只还原自己关过的，别碰原版本来就关着的。</summary>
+    private static readonly HashSet<InventorySlotWidget> s_hidden = new();
 
     public static void Update(ComponentGui? gui)
     {
@@ -74,6 +77,16 @@ public static class StashSlotDresser
             return;
         }
 
+        // 拖动中的那个图标**不是** InventorySlotWidget：
+        // 原版是从 Widgets/InventoryDragWidget 加载一个普通容器，里面搁一个裸的
+        // BlockIconWidget（名字 "InventoryDragWidget.Icon"）。
+        // 只认 InventorySlotWidget 就会漏掉它——上一版换了扫描根节点也没用，因为类型就不对。
+        if (widget is BlockIconWidget loose)
+        {
+            DressIcon(loose);
+            return;
+        }
+
         if (widget is ContainerWidget container)
         {
             foreach (Widget child in container.Children)
@@ -92,6 +105,28 @@ public static class StashSlotDresser
             return;
         }
 
+        bool isBackpack = DressIcon(icon);
+
+        if (isBackpack)
+        {
+            slot.HideHealthBar = true;
+        }
+        else if (slot.HideHealthBar && s_hidden.Contains(slot))
+        {
+            // 只还原**我们关过**的那些。衣物界面的四个槽本来就自带 HideHealthBar，别动它们。
+            slot.HideHealthBar = false;
+            s_hidden.Remove(slot);
+        }
+
+        if (isBackpack)
+        {
+            s_hidden.Add(slot);
+        }
+    }
+
+    /// <summary>只管取景方向，返回这一格是不是背包。</summary>
+    private static bool DressIcon(BlockIconWidget icon)
+    {
         bool isBackpack = IsBackpack(icon.Value);
 
         // 只在"该是什么样"和"现在是什么样"不一致时才写，避免每次扫描都碰一遍控件。
@@ -101,19 +136,13 @@ public static class StashSlotDresser
             {
                 icon.CustomViewMatrix = FromBehind;
             }
-
-            slot.HideHealthBar = true;
-            return;
         }
-
-        // 格子里换成别的东西了：把我们改过的两样还回去。
-        // 注意别动那些**本来**就设了这两项的格子（衣物界面的四个槽自带 HideHealthBar），
-        // 所以只在"我们设过取景矩阵"时才还原耐久条。
-        if (icon.CustomViewMatrix.HasValue && icon.CustomViewMatrix.Value == FromBehind)
+        else if (icon.CustomViewMatrix.HasValue && icon.CustomViewMatrix.Value == FromBehind)
         {
             icon.CustomViewMatrix = null;
-            slot.HideHealthBar = false;
         }
+
+        return isBackpack;
     }
 
     private static bool IsBackpack(int value)

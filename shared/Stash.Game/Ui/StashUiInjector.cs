@@ -71,7 +71,9 @@ public static class StashUiInjector
         }
 
         MakeRoomForBar(host);
-        host.Children.Add(new StashButtonBar(gui, targets));
+
+        // 我们自己的容器界面已经自带"物品栏 / 背包"切换，别再挂一个。
+        host.Children.Add(new StashButtonBar(gui, targets, allowSideToggle: panel is not StashContainerWidget));
         s_injected.Add(panel);
 
         Log.Information($"[Stash] {panel.GetType().Name} 挂上 {targets.Count} 个整理按钮");

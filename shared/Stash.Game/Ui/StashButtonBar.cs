@@ -19,9 +19,17 @@ public sealed class StashButtonBar : StackPanelWidget
 
     private readonly ComponentGui? m_gui;
     private readonly List<(ButtonWidget Button, PanelContainer Target)> m_buttons = new();
+    private readonly StashSideToggle? m_sideToggle;
+    private readonly ButtonWidget? m_sideButton;
 
     /// <param name="targets">这个界面里所有值得整理的库存，按界面上从左到右的顺序。</param>
-    public StashButtonBar(ComponentGui? gui, List<(StashSortKind Kind, PanelContainer Target)> targets)
+    /// <param name="allowSideToggle">
+    /// 允不允许挂"物品栏 / 背包"切换。我们自己的容器界面已经自带一个，别挂第二个。
+    /// </param>
+    public StashButtonBar(
+        ComponentGui? gui,
+        List<(StashSortKind Kind, PanelContainer Target)> targets,
+        bool allowSideToggle = true)
     {
         m_gui = gui;
 
@@ -55,10 +63,48 @@ public sealed class StashButtonBar : StackPanelWidget
             Children.Add(button);
             m_buttons.Add((button, target));
         }
+
+        // 原版箱子/物品栏这些界面本来没有"切到背包"的入口，这里补上——
+        // 分级箱子界面早就有了，实机反馈说原版箱子也想要。
+        if (!allowSideToggle || gui?.m_componentPlayer is not { } player)
+        {
+            return;
+        }
+
+        PanelContainer? inventory = null;
+        foreach ((StashSortKind kind, PanelContainer target) in targets)
+        {
+            if (kind == StashSortKind.PlayerInventory)
+            {
+                inventory = target;
+                break;
+            }
+        }
+
+        if (inventory == null || StashBackpack.GetWornTier(player) == null)
+        {
+            return;
+        }
+
+        m_sideToggle = new StashSideToggle(player, inventory);
+        m_sideButton = new BevelledButtonWidget
+        {
+            Text = m_sideToggle.Label,
+            Size = new Vector2(118f, 30f),
+            Margin = new Vector2(4f, 0f),
+        };
+        Children.Add(m_sideButton);
     }
 
     public override void Update()
     {
+        if (m_sideButton is { IsClicked: true } && m_sideToggle != null)
+        {
+            m_sideToggle.Advance();
+            m_sideButton.Text = m_sideToggle.Label;
+            AudioManager.PlaySound("Audio/UI/ButtonClick", 1f, 0f, 0f);
+        }
+
         foreach ((ButtonWidget button, PanelContainer target) in m_buttons)
         {
             if (!button.IsClicked)

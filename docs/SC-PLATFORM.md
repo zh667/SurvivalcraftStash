@@ -321,3 +321,20 @@ UV 仍然按 `格号 % 列数 / 格号 / 列数` 算（`BlocksManager.cs:571`）
 `InventorySlotWidget` 找拖动宿主写的是 `GameWidget.Children.Find<DragHostWidget>()`，
 也就是说 `DragHostWidget` 是 `GuiWidget` 的**兄弟**，不是它的子节点。
 要遍历所有物品图标（含拖动中的那个），根节点得取 `GameWidget` 而不是 `GuiWidget`。
+
+## 5.9 拖动中的物品图标是**另一个控件**
+
+`InventorySlotWidget` 开始拖动时不是把自己搬过去，而是：
+
+```csharp
+ContainerWidget w = (ContainerWidget)Widget.LoadWidget(null, ContentManager.Get<XElement>("Widgets/InventoryDragWidget"), null);
+w.Children.Find<BlockIconWidget>("InventoryDragWidget.Icon").Value = ...;
+DragHostWidget.BeginDrag(w, ...);
+```
+
+也就是说拖动中的图标是一个**裸的 `BlockIconWidget`**，外面套的是普通 `ContainerWidget`，
+**不是** `InventorySlotWidget`。而且 `DragHostWidget` 挂在 `GameWidget` 下，
+是 `GuiWidget` 的**兄弟**（`GameWidget.Children.Find<DragHostWidget>()`）。
+
+→ 想统一改所有物品图标（例如换取景机位），遍历时**根节点要取 `GameWidget`**，
+并且**要单独认 `BlockIconWidget`**，只认 `InventorySlotWidget` 会漏掉拖动中的那个。

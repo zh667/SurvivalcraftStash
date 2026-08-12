@@ -80,6 +80,120 @@ public static class StashOperations
         return filled;
     }
 
+    /// <summary>
+    /// 把整片存储网络里**同一种物品的零散堆**并起来。
+    ///
+    /// 为什么需要：存储终端显示的是一格一格的真实槽位，玩家把东西放回来时，
+    /// 原版拖放只会把它丢进你松手的那一格——哪怕别的箱子里已经有半堆同样的东西。
+    /// 于是就出现"取出一部分再放回去，没有自动堆叠"（实机反馈）。
+    ///
+    /// 只做**合并**，不重排：满堆和位置一概不动，只把靠后的零散堆往靠前的同种堆里倒。
+    /// 改动最小，联机下要发的差分也最小。
+    ///
+    /// 容量取的是 <c>inventory.GetSlotCapacity</c> 而不是物品的堆叠上限——
+    /// 分级箱子每格能装原版的若干倍，走库存自己的容量才吃得到这个加成。
+    /// </summary>
+    /// <returns>被腾空的格子数；没什么可并的返回 0。</returns>
+    public static int Compact(IReadOnlyList<IInventory> containers)
+    {
+        ArgumentNullException.ThrowIfNull(containers);
+
+        var slots = new List<(IInventory Inventory, int Slot, int Value, int Count)>();
+        foreach (IInventory inventory in containers)
+        {
+            for (int slot = 0; slot < inventory.SlotsCount; slot++)
+            {
+                int count = inventory.GetSlotCount(slot);
+                if (count > 0)
+                {
+                    slots.Add((inventory, slot, inventory.GetSlotValue(slot), count));
+                }
+            }
+        }
+
+        // 光照位不是物品属性，归一化后再分组，免得同一种东西被拆成两组。
+        var groups = new Dictionary<int, List<int>>();
+        for (int i = 0; i < slots.Count; i++)
+        {
+            int key = Terrain.ReplaceLight(slots[i].Value, 0);
+            if (!groups.TryGetValue(key, out List<int>? members))
+            {
+                members = new List<int>();
+                groups[key] = members;
+            }
+
+            members.Add(i);
+        }
+
+        var counts = new int[slots.Count];
+        for (int i = 0; i < slots.Count; i++)
+        {
+            counts[i] = slots[i].Count;
+        }
+
+        foreach (List<int> members in groups.Values)
+        {
+            if (members.Count < 2)
+            {
+                continue;
+            }
+
+            for (int a = 0; a < members.Count; a++)
+            {
+                int target = members[a];
+                int capacity = slots[target].Inventory.GetSlotCapacity(slots[target].Slot, slots[target].Value);
+
+                for (int b = members.Count - 1; b > a && counts[target] < capacity; b--)
+                {
+                    int source = members[b];
+                    if (counts[source] <= 0)
+                    {
+                        continue;
+                    }
+
+                    int move = Math.Min(capacity - counts[target], counts[source]);
+                    counts[target] += move;
+                    counts[source] -= move;
+                }
+            }
+        }
+
+        var byInventory = new Dictionary<IInventory, List<SlotAssignment>>();
+        int emptied = 0;
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (counts[i] == slots[i].Count)
+            {
+                continue;
+            }
+
+            if (!byInventory.TryGetValue(slots[i].Inventory, out List<SlotAssignment>? list))
+            {
+                list = new List<SlotAssignment>();
+                byInventory[slots[i].Inventory] = list;
+            }
+
+            list.Add(new SlotAssignment(slots[i].Slot, counts[i] > 0 ? slots[i].Value : 0, counts[i]));
+            if (counts[i] == 0)
+            {
+                emptied++;
+            }
+        }
+
+        if (byInventory.Count == 0)
+        {
+            return 0;
+        }
+
+        var plan = new StashPlan();
+        foreach ((IInventory inventory, List<SlotAssignment> assignments) in byInventory)
+        {
+            plan.Add(inventory, assignments);
+        }
+
+        return Execute(plan) ? emptied : 0;
+    }
+
     public static int Deposit(PanelContainer source, PanelContainer target, TransferMode mode)
     {
         ArgumentNullException.ThrowIfNull(source);

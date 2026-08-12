@@ -89,6 +89,10 @@ public static class StashText
 
     public static string OpenBackpack => UseEnglish ? "Backpack" : "背包";
 
+    /// <summary>原版界面那块网格只有 16 格，装不下整只背包，所以要分页。</summary>
+    public static string BackpackPage(int page, int pages) =>
+        UseEnglish ? $"Backpack {page}/{pages}" : $"背包 {page}/{pages}";
+
 
 
     /// <summary>大数缩写：终端里一格可能有十几万个，原样显示会撑破格子。</summary>

@@ -284,6 +284,11 @@ public sealed class StashTerminalWidget : CanvasWidget
     /// </summary>
     private void Refresh()
     {
+        // 先把网络里同种物品的零散堆并起来，再算显示。
+        // 玩家把东西放回终端时，原版拖放只会丢进松手的那一格，哪怕别处已经有半堆同样的
+        // （实机反馈"取出一部分再放回去没有自动堆叠"）。没什么可并的时候这一步不产生任何改动。
+        StashOperations.Compact(m_containers);
+
         NetworkSearch.Query query = NetworkSearch.Parse(m_lastQuery);
         SubsystemTerrain terrain = m_player.Project.FindSubsystem<SubsystemTerrain>();
 
