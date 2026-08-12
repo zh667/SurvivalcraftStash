@@ -25,6 +25,7 @@ public class StashModLoader : ModLoader
         ModsManager.RegisterHook("OnModalPanelWidgetSet", this);
         ModsManager.RegisterHook("UpdateInput", this);
         ModsManager.RegisterHook("OnLoadingFinished", this);
+        ModsManager.RegisterHook("GuiUpdate", this);
 
         // 一个一个注册：之前三个写在同一个 try 里，第一个撞号后面两个就再也没注册上。
         s_platform.PackageAvailable = Register(new StashOpPackage());
@@ -55,6 +56,9 @@ public class StashModLoader : ModLoader
 
     public override void UpdateInput(ComponentInput componentInput, WidgetInput widgetInput) =>
         StashHotkeys.Update(componentInput, widgetInput);
+
+    /// <summary>给背包格子改妆：图标从背后取景、不显示耐久条。内部有节流，不是每帧都扫。</summary>
+    public override void GuiUpdate(ComponentGui componentGui) => StashSlotDresser.Update(componentGui);
 
     public override void OnModalPanelWidgetSet(ComponentGui gui, Widget oldWidget, Widget newWidget) =>
         StashUiInjector.OnModalPanelChanged(gui, oldWidget, newWidget);

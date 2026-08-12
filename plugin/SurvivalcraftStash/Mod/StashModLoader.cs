@@ -20,6 +20,7 @@ public class StashModLoader : ModLoader
         ModsManager.RegisterHook("OnXdbLoad", this);
         ModsManager.RegisterHook("OnModalPanelWidgetSet", this);
         ModsManager.RegisterHook("UpdateInput", this);
+        ModsManager.RegisterHook("GuiUpdate", this);
         ModsManager.RegisterHook("OnProjectLoaded", this);
         ModsManager.RegisterHook("OnProjectDisposed", this);
         ModsManager.RegisterHook("ClothingWidgetOpen", this);
@@ -28,6 +29,9 @@ public class StashModLoader : ModLoader
 
     public override void ClothingWidgetOpen(ComponentGui componentGui, ClothingWidget clothingWidget) =>
         StashClothingButton.Attach(componentGui, clothingWidget);
+
+    /// <summary>给背包格子改妆：图标从背后取景、不显示耐久条。内部有节流，不是每帧都扫。</summary>
+    public override void GuiUpdate(ComponentGui componentGui) => StashSlotDresser.Update(componentGui);
 
     /// <summary>把背包组件挂到玩家实体上。走代码而不是 .xdb，原因见 StashDatabaseInjector。</summary>
     public override void OnXdbLoad(XElement xElement) => StashDatabaseInjector.Inject(xElement);

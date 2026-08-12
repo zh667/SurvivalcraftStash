@@ -273,7 +273,19 @@ UV 仍然按 `格号 % 列数 / 格号 / 列数` 算（`BlocksManager.cs:571`）
   原版 `ClothingBlock` 的 `DefaultIconViewOffset` 是 `(-1, 1, -1)`（看到胸前）；
   水平取反成 `(1, 1, 1)` 就是从背后看。
 
-- **顶替原版方块实例是可行的**（联机版）：`BlocksManager.Initialize` 按 mod 顺序执行
-  `m_blocks[block.BlockIndex] = block`，原版是 system mod 排在最前，
-  所以自己写一个 `public new static int Index = 203` 的子类就能覆盖它，其余行为继承。
-  代价是全局唯一——多个 Mod 抢同一个索引时最后加载的赢。**插件版没验证过，别照搬。**
+- **千万别用子类顶替原版方块实例**（试过，所有世界都打不开）。
+  写一个 `public new static int Index = 203` 的 `ClothingBlock` 子类，
+  `BlocksManager.Initialize` 确实会用它覆盖 `m_blocks[203]`，但随后两件事全崩：
+  1. `BlocksManager.LoadBlocksData` 是按**类名**匹配 BlocksData 里的行的。
+     子类叫别的名字 → 一行都匹配不上 → `CraftingId` / `Durability` / 显示名 / 图标参数
+     全部停留在默认值，配方按 CraftingId 找不到衣物，进世界直接
+     `Object reference not set to an instance of an object`。
+  2. `ClothingBlock` 里所有语言查询都写成 `$"{GetType().Name}:{index}"`
+     （`GetDisplayName` / `GetDescription` / `LoadClothingData`），
+     类名一变，**所有衣物**的名字都会退化成字面量 `[ClothingBlock:13]`。
+
+  → 要逐件改外观，改**控件**而不是方块：
+  `InventorySlotWidget.HideHealthBar`（关耐久条）和
+  `BlockIconWidget.CustomViewMatrix`（换图标机位）都是逐个格子的公开属性，两个平台都有。
+  用 `ModLoader.GuiUpdate` 从 GUI 根节点往下扫一遍就能全覆盖（快捷栏、物品栏、各种容器界面
+  都在这棵树下；图鉴那种独立屏幕不在）。
