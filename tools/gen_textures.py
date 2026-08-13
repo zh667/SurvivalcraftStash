@@ -57,6 +57,23 @@ METALS = {
 }
 
 STEEL = {'base': (72, 76, 84), 'light': (104, 110, 120), 'dark': (44, 47, 54)}
+
+# 无线合成终端的机身。和普通无线终端的钢灰**必须**拉开距离，
+# 两台机器会同时躺在物品栏里，玩家要一眼分清哪台能合成。
+BRASS = {'base': (168, 128, 52), 'light': (214, 176, 88), 'dark': (110, 80, 28)}
+CRAFT_SCREEN_ON = (128, 240, 130)
+CRAFT_SCREEN_OFF = (110, 96, 60)
+
+# 熔炉本体用石头而不是木头——原版熔炉就是石砌的，换成木头玩家会以为能烧起来。
+STONE = {
+    'base': (124, 124, 124),
+    'light': (150, 150, 150),
+    'dark': (96, 96, 96),
+    'seam': (72, 72, 72),
+}
+
+# 炉口里的火。正面那格中间一块，颜色从下往上由亮到暗。
+FIRE = [(255, 214, 110), (250, 170, 54), (226, 108, 30), (150, 56, 18)]
 SCREEN_ON = (96, 232, 236)
 SCREEN_OFF = (150, 62, 62)
 SLOT = (34, 36, 42)
@@ -254,6 +271,107 @@ def hub_top():
     return tile
 
 
+def bricks(tile, seed=41):
+    """石砌墙面：错缝砖，缝里压暗。熔炉三个面的共同底子。"""
+    for y in range(TILE):
+        for x in range(TILE):
+            n = noise(x, y, seed + y // 8)
+            c = STONE['base']
+            if n > 0.84:
+                c = STONE['light']
+            elif n < 0.2:
+                c = STONE['dark']
+            put(tile, x, y, c)
+
+    for row in range(4):                          # 横缝
+        y = row * 8 + 7
+        for x in range(TILE):
+            put(tile, x, y, STONE['seam'])
+    for row in range(4):                          # 竖缝错开半块
+        offset = 0 if row % 2 == 0 else 8
+        for x in (offset + 7, offset + 23):
+            if 0 <= x < TILE:
+                for y in range(row * 8, row * 8 + 7):
+                    put(tile, x, y, STONE['seam'])
+
+
+def furnace_front(metal):
+    """熔炉正面：石砌 + 该档金属的边框 + 中间一个亮着火的炉口。"""
+    tile = new_tile()
+    bricks(tile, seed=41)
+    metal_frame(tile, metal)
+    rivets(tile, metal)
+
+    # 炉口：拱形开口，外面一圈金属唇边。
+    rect(tile, 9, 12, TILE - 10, 24, shade(SLOT, -6))
+    outline(tile, 9, 12, TILE - 10, 24, metal['dark'])
+    for x in range(10, TILE - 10):
+        put(tile, x, 12, metal['light'])
+
+    # 炉膛里的火：底下最亮，越往上越暗，两侧收窄。
+    for i, y in enumerate(range(23, 15, -1)):
+        inset = i // 2
+        color = FIRE[min(i // 2, len(FIRE) - 1)]
+        rect(tile, 11 + inset, y, TILE - 12 - inset, y, color)
+
+    # 炉底一条炉栅，把火和开口下沿分开。
+    for x in range(11, TILE - 11, 3):
+        put(tile, x, 24, metal['dark'])
+    return tile
+
+
+def furnace_side(metal):
+    tile = new_tile()
+    bricks(tile, seed=43)
+    metal_frame(tile, metal)
+    rivets(tile, metal)
+    # 侧面一条竖向加强筋，和正面区分开（正面是炉口，侧面是实心）。
+    rect(tile, 14, 3, 17, TILE - 4, metal['base'])
+    for y in range(3, TILE - 3):
+        put(tile, 14, y, metal['light'])
+        put(tile, 17, y, metal['dark'])
+    return tile
+
+
+def furnace_top(metal):
+    tile = new_tile()
+    bricks(tile, seed=47)
+    metal_frame(tile, metal)
+    rivets(tile, metal)
+    # 顶上一个烟囱口，中间透出一点炉火的红。
+    rect(tile, 11, 11, TILE - 12, TILE - 12, STONE['dark'])
+    outline(tile, 11, 11, TILE - 12, TILE - 12, metal['base'])
+    rect(tile, 13, 13, TILE - 14, TILE - 14, shade(SLOT, -4))
+    rect(tile, 14, 15, TILE - 15, TILE - 15, FIRE[3])
+    return tile
+
+
+def furnace_upgrade_item(metal):
+    """熔炉升级件：和箱子升级件区分开——底板上是一个**火焰**而不是箭头。
+    两种升级件同时在物品栏里时，玩家一眼要能分清点哪个。"""
+    tile = new_tile()
+    rect(tile, 6, 6, TILE - 7, TILE - 7, metal['base'])
+    outline(tile, 6, 6, TILE - 7, TILE - 7, metal['dark'])
+    for x in range(7, TILE - 7):
+        put(tile, x, 7, metal['light'])
+    for y in range(7, TILE - 7):
+        put(tile, 7, y, metal['light'])
+
+    # 火焰：下宽上尖，左右不对称一点才像火。
+    cx = TILE // 2
+    flame = [
+        (23, 5), (22, 5), (21, 5), (20, 4),
+        (19, 4), (18, 3), (17, 3), (16, 2),
+        (15, 2), (14, 2), (13, 1), (12, 1), (11, 1),
+    ]
+    for i, (y, half) in enumerate(flame):
+        color = FIRE[min(i // 4, len(FIRE) - 1)]
+        rect(tile, cx - half, y, cx - 1 + half, y, color)
+    # 焰心：中间压一道更亮的。
+    rect(tile, cx - 1, 15, cx, 22, FIRE[0])
+    return tile
+
+
 def upgrade_item(metal):
     """升级件：一块金属板，中间一个朝上的箭头——照 IronChest 升级件的"两种材料"意思，
     但 SC 的物品图标只有一格，用箭头比拼两种材质更认得出。"""
@@ -278,6 +396,39 @@ def upgrade_item(metal):
         put(tile, cx - 2, y, metal['dark'])
         put(tile, cx + 1, y, metal['dark'])
     rect(tile, cx - 2, 25, cx + 1, 25, metal['dark'])
+    return tile
+
+
+def wireless_crafting(bound):
+    """无线合成终端：黄铜机身 + 绿屏 + 面板上一个 3×3 的合成格。
+    和普通无线终端（钢灰机身 + 青屏/红屏）拉开距离——实机要求"贴图颜色要不同"。"""
+    tile = new_tile()
+    body = BRASS
+    rect(tile, 7, 3, TILE - 8, TILE - 4, body['base'])
+    outline(tile, 7, 3, TILE - 8, TILE - 4, body['dark'])
+    for x in range(8, TILE - 8):
+        put(tile, x, 4, body['light'])
+    for y in range(4, TILE - 4):
+        put(tile, 8, y, body['light'])
+
+    screen = CRAFT_SCREEN_ON if bound else CRAFT_SCREEN_OFF
+    rect(tile, 10, 6, TILE - 11, 12, shade(screen, -95))
+    outline(tile, 10, 6, TILE - 11, 12, body['dark'])
+    for x in range(11, TILE - 11, 2):
+        put(tile, x, 8, screen)
+        put(tile, x, 10, shade(screen, -55))
+
+    # 下半张脸是一个 3×3 的合成格，一眼认出"这台能合成"
+    for gy in range(3):
+        for gx in range(3):
+            x0 = 11 + gx * 4
+            y0 = 15 + gy * 4
+            rect(tile, x0, y0, x0 + 2, y0 + 2, SLOT)
+            put(tile, x0, y0, shade(SLOT, -8))
+            put(tile, x0 + 2, y0 + 2, body['light'])
+
+    put(tile, TILE // 2, 1, screen)                           # 天线
+    put(tile, TILE // 2, 2, body['light'])
     return tile
 
 
@@ -335,6 +486,20 @@ LAYOUT = {
     14: lambda: upgrade_item(METALS['diamond']),
     15: lambda: wireless(False),
     16: lambda: wireless(True),
+    17: lambda: furnace_front(METALS['copper']),
+    18: lambda: furnace_side(METALS['copper']),
+    19: lambda: furnace_top(METALS['copper']),
+    20: lambda: furnace_front(METALS['iron']),
+    21: lambda: furnace_side(METALS['iron']),
+    22: lambda: furnace_top(METALS['iron']),
+    23: lambda: furnace_front(METALS['diamond']),
+    24: lambda: furnace_side(METALS['diamond']),
+    25: lambda: furnace_top(METALS['diamond']),
+    26: lambda: furnace_upgrade_item(METALS['copper']),
+    27: lambda: furnace_upgrade_item(METALS['iron']),
+    28: lambda: furnace_upgrade_item(METALS['diamond']),
+    29: lambda: wireless_crafting(False),
+    30: lambda: wireless_crafting(True),
 }
 
 NAMES = {
@@ -344,6 +509,11 @@ NAMES = {
     9: 'hub front', 10: 'hub side', 11: 'hub top',
     12: 'upgrade copper', 13: 'upgrade iron', 14: 'upgrade diamond',
     15: 'wireless unbound', 16: 'wireless bound',
+    17: 'furnace copper front', 18: 'furnace copper side', 19: 'furnace copper top',
+    20: 'furnace iron front', 21: 'furnace iron side', 22: 'furnace iron top',
+    23: 'furnace diamond front', 24: 'furnace diamond side', 25: 'furnace diamond top',
+    26: 'furnace upgrade copper', 27: 'furnace upgrade iron', 28: 'furnace upgrade diamond',
+    29: 'craft terminal unbound', 30: 'craft terminal bound',
 }
 
 

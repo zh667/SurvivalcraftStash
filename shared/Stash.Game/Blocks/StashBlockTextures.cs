@@ -58,6 +58,16 @@ public static class StashBlockTextures
     public const int WirelessUnbound = 15;
     public const int WirelessBound = 16;
 
+    /// <summary>分级熔炉三档，每档三格（正面 / 侧面 / 顶面），格号 = 17 + 档位*3。</summary>
+    public const int FurnaceFirst = 17;
+
+    /// <summary>熔炉升级件三档，格号 = 26 + 升级链下标。图案是火焰，和箱子升级件的箭头区分开。</summary>
+    public const int FurnaceUpgradeFirst = 26;
+
+    /// <summary>无线合成终端：黄铜机身 + 绿屏，和普通无线终端的钢灰 + 青屏拉开距离。</summary>
+    public const int CraftTerminalUnbound = 29;
+    public const int CraftTerminalBound = 30;
+
     private static Texture2D? s_texture;
 
     /// <summary>

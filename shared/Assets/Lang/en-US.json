@@ -54,6 +54,41 @@
       "DisplayName": "Wireless Terminal",
       "Description": "Use it on a storage terminal to bind, then use it anywhere to open that terminal remotely.",
       "CRDescription:0": "Wireless Terminal"
+    },
+    "StashCopperFurnaceBlock:0": {
+      "DisplayName": "Copper Furnace",
+      "Description": "Smelts 2x faster than a plain furnace. Same slots.",
+      "CRDescription:0": "Copper Furnace"
+    },
+    "StashIronFurnaceBlock:0": {
+      "DisplayName": "Iron Furnace",
+      "Description": "Smelts 4x faster than a plain furnace.",
+      "CRDescription:0": "Iron Furnace"
+    },
+    "StashDiamondFurnaceBlock:0": {
+      "DisplayName": "Diamond Furnace",
+      "Description": "Smelts 8x faster than a plain furnace.",
+      "CRDescription:0": "Diamond Furnace"
+    },
+    "StashFurnaceUpgradeBlock:0": {
+      "DisplayName": "Copper Furnace Upgrade",
+      "Description": "Use on a plain furnace to upgrade it in place; contents and fire are kept.",
+      "CRDescription:0": "Copper Furnace Upgrade"
+    },
+    "StashFurnaceUpgradeBlock:1": {
+      "DisplayName": "Iron Furnace Upgrade",
+      "Description": "Use on a copper furnace.",
+      "CRDescription:0": "Iron Furnace Upgrade"
+    },
+    "StashFurnaceUpgradeBlock:2": {
+      "DisplayName": "Diamond Furnace Upgrade",
+      "Description": "Use on an iron furnace.",
+      "CRDescription:0": "Diamond Furnace Upgrade"
+    },
+    "StashWirelessCraftingTerminalBlock:0": {
+      "DisplayName": "Wireless Crafting Terminal",
+      "Description": "A wireless terminal with a 3x3 crafting grid. Fill pulls materials from the storage network, your inventory and your pack. Crafting it from a bound terminal keeps that binding.",
+      "CRDescription:0": "Wireless Crafting Terminal"
     }
   }
 }

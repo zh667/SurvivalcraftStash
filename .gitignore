@@ -9,3 +9,11 @@ artifacts/
 *.netmod
 Game.log
 refs/
+
+# 实机测试带回来的日志和截图（放仓库根目录方便贴给助手，不入库）
+Game*.log
+Snipaste_*.png
+
+# Python 缓存
+__pycache__/
+*.pyc

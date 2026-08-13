@@ -338,3 +338,402 @@ DragHostWidget.BeginDrag(w, ...);
 
 → 想统一改所有物品图标（例如换取景机位），遍历时**根节点要取 `GameWidget`**，
 并且**要单独认 `BlockIconWidget`**，只认 `InventorySlotWidget` 会漏掉拖动中的那个。
+
+## 5.10 界面画布只有 708×398（最坏情况）——JEI 式侧栏做不了
+
+虚拟画布的尺寸写死在 `ScreensManager.LayoutAndDrawWidgets`：
+
+```csharp
+float num = 850f / MathUtils.Clamp(SettingsManager.UIScale, 0.5f, 1.2f);
+Vector2 availableSize = new Vector2(num, num / vector.X * vector.Y);
+float num3 = num * 9f / 16f;                 // 高度不低于宽 × 9/16
+```
+
+`SettingsManager.UIScale` 默认 **0.8**，可调范围 0.5~1.2。于是：
+
+| UI 缩放 | 画布 | 原版面板 614×382 之后剩下 |
+|---|---|---|
+| 0.5 | 1700×956 | 每边 543 |
+| 0.8（默认） | 1062×598 | 每边 224 |
+| 1.2（手机常用） | **708×398** | 每边 **47**，上下各 **8** |
+
+一个原版格子 72 单位、我们终端里 50 单位——**47 单位塞不下任何东西**。
+所以 MC 那种"面板旁边永远挂一列物品"在 SC 上不可能，只能做成整屏浮层。
+
+**实际踩到的两处溢出**（都是这次才发现的）：
+- `StashTerminalWidget` 设计尺寸 816×438，在 708 宽的画布上左右各被切掉 54——整整一列格子点不到。
+- `StashUiInjector.MakeRoomForBar` 把面板加高 40 → 422，UI 缩放超过 **1.13** 就上下各被切 12。
+
+现在统一走 `StashScreenMetrics`：先按设计尺寸算，再 `FitScale` 等比压进
+`ScreensManager.RootWidget.ActualSize`。**等比缩小总比裁掉强**——格子小还能点，切掉就没了。
+
+浮层挂在 `ComponentGui.ControlsContainerWidget` 里、`DragHostWidget` **之前**
+（两个平台都有这个属性），这样浮层盖住面板，而拖拽图标仍在最上层。
+不能用 `ModalPanelWidget`：那是**一个**槽位，塞进去会顶掉正开着的工作台界面，
+而"一键填料"恰恰需要那个界面背后的合成格还活着。
+
+## 5.11 `ComponentFurnace`：两个平台差得最远的一个组件
+
+| | 联机版 | 插件版（SCAPI 1.9.2.1） |
+|---|---|---|
+| `Update(float)` | **不是 virtual**（`IUpdateable` 的隐式实现） | `virtual`，可直接 override |
+| 强制改方块为 64/65 | **有** | **没有**（改成组件自己持有 `FireParticleSystem`） |
+| 可调速度 | 无，`0.15f` 写死在 Update 里 | `public float SmeltSpeed = 0.15f` |
+| 内部状态 | 字段全 public，抄得动 | 藏在属性/虚方法后面，抄不动 |
+
+**最要命的是第二行。** 联机版 `ComponentFurnace.Update` 末尾有：
+
+```csharp
+if (m_heatLevel > 0f) { if (num3 != 65) ChangeCell(..., ReplaceContents(cellValue, 65)); }
+else if (num3 != 64)  { ChangeCell(..., ReplaceContents(cellValue, 64)); }
+```
+
+64 / 65 是**原版熔炉和点燃熔炉的方块索引，写死的**。派生一个分级熔炉组件然后调
+`base.Update(dt * 倍率)`，结果是炉子放下去第一帧就变回原版熔炉，
+而且那次 `ChangeCell` 会触发我们自己的 `OnBlockRemoved`，把炉里的东西撒一地、
+连方块实体一起删掉。
+
+→ 联机版必须**把原版 Update 抄一份、只删掉方块替换那一段**；插件版直接 override 调 base 即可。
+代价是联机版的分级熔炉没有原版那种"点燃冒火"的粒子（那是
+`SubsystemFurnaceBlockBehavior` 认方块索引 65 才加的），正面贴图上画了火来补。
+
+**非 virtual 方法怎么顶掉**：在派生类上**重新声明接口并显式实现**——
+C# 会为派生类重建接口映射，而 `SubsystemUpdate` 正是通过接口调用的
+（`SubsystemUpdate.cs:123` `sortedUpdateable.Update(dt);`）。
+写成 `public new void Update` 是**没用的**，接口调用仍会走到基类。
+
+注意插件版的 `IUpdateable` 多一个成员 `float FloatUpdateOrder`，
+所以显式实现那条路在插件版上要多实现一个——我们那边用 override，绕开了。
+
+## 5.12 白嫖到的两条链路
+
+- **联机版开熔炉界面不用自己发包。** 原版 `BlockEditPackage`（`OpenInventoryByPoint`）
+  服务端拿坐标找到方块实体的 `IInventory` 回给客户端，客户端按
+  `inventory is ComponentFurnace` 分发到 `FurnaceWidget`——子类正好命中。
+  （分级箱子就不行：那条路按 `is ComponentChest` 开写死 4×4 的界面，我们 80 格的箱子只能看到前 16 格。）
+- **火焰/进度的联机同步也是白嫖的。** `SubsystemFurnaceBlockBehavior.Update` 每秒遍历
+  **所有**方块实体收集 `ComponentFurnace` 发 `ComponentFurnacePackage`，我们的也在里面。
+
+## 5.13 配方匹配会穷举平移和翻转 → "配方过大"能精确判定
+
+`CraftingRecipesManager.MatchRecipe`：
+
+```csharp
+for (int num = 0; num < 2; num++)              // 翻不翻
+  for (int num2 = -3; num2 <= 3; num2++)       // 竖移
+    for (int num3 = -3; num3 <= 3; num3++)     // 横移
+```
+
+配方存成规范 3×3（`Ingredients` 是 `string[9]`，下标 = 列 + 行*3）。
+既然平移自由，**只要非空格的包围盒不超过 N×N 就一定摆得下**——
+2×2 的自带合成格判 2、工作台判 3，不用试。
+摆放时把包围盒推到左上角，格 (列,行) → 槽位 `列 + 行*N`
+（正是 `ComponentCraftingTable` 的编号方式）。
+
+配料串比对规则（`CompareIngredients`）：配方没写 data = 通配，写了 = 必须相等。
+取料时**要用虚方法 `Block.GetCraftingId(value)`**，不能读 `Block.CraftingId` 字段——
+染色方块之类每个 data 的 craftingId 不一样。
+
+另外两个平台的签名不一样，别直接调：
+`FindMatchingRecipe(terrain, ingredients, heatLevel, ComponentPlayer)`（联机版）
+vs `(terrain, ingredients, heatLevel, float playerLevel)`（插件版）。
+
+## 5.14 `BlockIconWidget.Light` 写的是 `Value` 的光照位
+
+```csharp
+public int Light { get => Terrain.ExtractLight(Value);
+                   set => Value = Terrain.ReplaceLight(Value, value); }
+```
+
+**不是独立字段。** 所以必须先写 `Value` 再补 `Light`；
+反过来写的话光照会被后面的 `Value` 覆盖掉，整屏图标全是暗的——
+和当初贴图"全黑"是同一类症状，画面上看不出原因。
+
+顺带：目录里的物品格**不能用 `InventorySlotWidget`**（那个必须绑真实库存的某一格）。
+用 `BevelledButtonWidget` 套一个 `BlockIconWidget` 即可——`ButtonWidget` 本身就是 `CanvasWidget`。
+
+## 5.15 `BevelledButtonWidget` 的点击区比按钮小一圈，而且依赖文字撑开
+
+`Widgets/BevelledButtonContents.xml`：
+
+```xml
+<BevelledButtonWidget>
+  <CanvasWidget Name="BevelledButton.Canvas" Margin="6, 6">
+    <BevelledRectangleWidget Name="BevelledButton.Rectangle" />
+    <RectangleWidget Name="BevelledButton.Image" IsVisible="false" />
+    <LabelWidget Name="BevelledButton.Label" HorizontalAlignment="Center" VerticalAlignment="Center" />
+    <ClickableWidget Name="BevelledButton.Clickable" SoundName="Audio/UI/ButtonClick" />
+  </CanvasWidget>
+</BevelledButtonWidget>
+```
+
+`ClickableWidget` 在那个 `Margin="6, 6"` 的画布里，所以**可点范围比按钮四周各小 6 单位**。
+按钮有文字时无所谓（文字本来就在中间），但拿它当"无文字的物品格"用就不可靠了——
+配方浏览器第一版这么写，实机点物品没反应。
+
+自己搭格子的正确姿势（见 `StashItemButton`）：
+
+```csharp
+Size = new Vector2(size, size);                 // Size 在 CanvasWidget 上，Widget 没有
+Children.Add(frame);                            // BevelledRectangleWidget，IsHitTestVisible=false
+Children.Add(icon);                             // BlockIconWidget，IsHitTestVisible=false
+Children.Add(new ClickableWidget { … });        // 最后一个 = 最先命中
+```
+
+两条依据：
+- `ClickableWidget` **没有 Size 属性**（`Size` 声明在 `CanvasWidget` 上）。
+  它靠 `Widget` 构造里的 `DesiredSize = Infinity` 撑满父控件——
+  `ContainerWidget.ArrangeChildWidgetInCell` 把 Infinity 夹成整个格子。
+- `Widget.HitTestGlobal` 从根往下、**孩子倒序**遍历，返回第一个
+  `IsHitTestVisible && HitTest(point)` 的控件；`ClickableWidget.Update` 要求
+  `HitTestGlobal(point) == this`。所以点击区必须是**最后一个孩子**，其余装饰件一律
+  `IsHitTestVisible = false`。
+
+## 5.16 位图字体里没有 ◀ ▶
+
+实机会画成两个空心方块（豆腐块）。**▲ ▼ 是有的**，翻页可以放心用。
+要做"上一个 / 下一个"就老老实实写字。
+
+## 5.17 物品目录：`DisplayOrder` 只在分类内有意义
+
+`Block.GetDisplayOrder(value)` 的值在**不同分类之间没有可比性**——
+原版图鉴是先选分类、再在分类内列表的（`RecipaediaScreen.PopulateBlocksList`）。
+
+拉平成一个大列表只按 DisplayOrder 排会出事：`ClothingBlock.GetDisplayOrder` 返回的是
+`ClothingData.DisplayIndex`，而 `DisplayIndex` 是加载 `.clo` 时的**递增计数**
+（`LoadClothingData` 里的 `num++`），我们的三档行囊落在 39~41，
+于是就插到了 DisplayOrder 也是 39~41 的泥土/树叶中间——
+实机看到的是"一堆行囊夹在草方块里"。
+
+正确做法：**先按分类（`BlocksManager.Categories` 的原始顺序）分组，再按 DisplayOrder 排。**
+
+## 5.18 可染色衣物会在创造目录里变成 16 条
+
+```csharp
+// ClothingBlock.GetCreativeValues()
+int colorsCount = ((!clothingData.CanBeDyed) ? 1 : 16);
+```
+
+`.clo` 里写 `CanBeDyed="True"` 的每件衣物都会吐出 16 种颜色的变体。
+三档行囊 = 48 条，在目录里连着刷一屏半全是长得差不多的包。
+不需要染色就写 `False`。
+
+## 5.19 配方查询**必须**按整个 value 精确匹配
+
+试过"精确匹配不到就退回只按方块索引匹配"，想照顾 data 位对不上的情况。**实机直接翻车**：
+
+- 所有衣物共用方块索引 203 → 随便点一件染色衣服都"找到 37 条配方"；
+- 所有蛋共用一个索引 → 煮熟的鸽子蛋显示成煮熟的海鸥蛋的配方；
+- 鱼卵一类同理，一点就是 14 条。
+
+data 位本来就是用来区分这些东西的。原版图鉴用的就是精确匹配
+（`Recipes.Where(r => r.ResultValue == value)`），照抄即可。
+
+配套的一条：**配方面板的标题要显示"玩家点的那个物品"的名字**，
+不是 `recipe.ResultValue` 的名字——否则同一条配方被多个变体命中时，标题会张冠李戴。
+
+## 5.20 `CraftingRecipeSlotWidget` 的两个陷阱（点配料跳转时踩到）
+
+```csharp
+public override void MeasureOverride(Vector2 parentAvailableSize)
+{
+    m_blockIconWidget.IsVisible = false;
+    m_labelWidget.IsVisible = false;
+    if (!string.IsNullOrEmpty(m_ingredient))
+    {
+        CraftingRecipesManager.DecodeIngredient(m_ingredient, out string craftingId, out int? data);
+        Block[] array = BlocksManager.FindBlocksByCraftingId(craftingId);
+        if (array.Length != 0)
+        {
+            Block block = array[(int)(1.0 * Time.RealTime) % array.Length];   // ← 按时间轮播
+            m_blockIconWidget.Value = Terrain.MakeBlockValue(block.BlockIndex, 0,
+                data.HasValue ? data.Value : 4);                              // ← 没写 data 就填 4
+            m_blockIconWidget.IsVisible = true;
+        }
+    }
+    …
+}
+```
+
+**一、没写 data 的配料，图标里填的是 `4`，不是 0。**
+拿这个值直接去查配方必然查空。实机表现：从物品目录点木棒有配方（值 `23`），
+从配方里点同一个木棒却说没有（值 `65559` = `23 | (4 << 14)` = 木棒:4）；木板、石板同理。
+→ **data 要从配料串自己解析**：写了就照抄，没写就用 **0**；方块索引才取图标里那个。
+
+**二、`SetIngredient(null)` 不清 `m_blockIconWidget.Value`**，只把 `IsVisible` 关掉。
+不检查 `IsVisible` 的话，跳到一个没有配方的物品之后，鼠标移到空格上
+还会显示**上一条配方**的材料名。
+
+**三、方块索引必须取图标当前那个。** 一个 craftingId 对应多个方块时它按 `Time.RealTime`
+轮播，写死取 `array[0]` 会出现"点到的和看到的不是一个东西"。
+
+顺带澄清一个容易误会的点：配方匹配**和数量无关**。
+`CompareIngredients` 只比 craftingId 和 data，`ResultCount`（比如木板→4 个木棒的那个 4）
+不参与任何匹配。
+
+## 5.21 方块数据从别的方块克隆时，`FireDuration` 会跟着一起来
+
+分级熔炉的 BlocksData 行是从存储枢纽（而它又源自木箱）克隆的，于是继承了
+**`FireDuration = 30`**——石头砌的熔炉放下去会被点着，三台一起烧
+（实机截图确认）。原版 `FurnaceBlock` 是 `0`。
+
+克隆行的时候要把"这块材料是什么"相关的列一并从**同材质的原版方块**抄过来：
+`FireDuration` / `DigMethod` / `DigResilience` / `ExplosionResilience` /
+`Density` / `DefaultSoundMaterialName` / `RequiredToolLevel`。
+
+但**不能全抄**：原版熔炉是**模型方块**，我们是实心立方体，这几列必须按自己的形状写——
+`IsFluidBlocker`（我们要 TRUE，不然水会穿过去）、`ExplosionKeepsPickables`、
+`DefaultExplosionIncendiary`。
+
+## 5.22 插件版的 `ComponentInventoryBase` 没有 `OnSlotChange`
+
+那是**联机版专有**的（它要把槽位改动同步给客户端）。共享代码里直接调会编译不过，
+得包一层：
+
+```csharp
+private void SlotChanged(int slotIndex)
+{
+#if !STASH_SCMOD
+    OnSlotChange(slotIndex);
+#endif
+}
+```
+
+## 5.23 往玩家身上挂第二个合成格：**别继承 `ComponentCraftingTable`**
+
+`ComponentGui` 按 E 开物品栏时是：
+
+```csharp
+m_componentPlayer.Entity.FindComponent<ComponentCraftingTable>(throwOnError: true)
+```
+
+玩家身上本来就有一个 2×2 的。再挂一个**同类型**的，这句要么抛异常、要么拿错——
+按 E 直接打不开物品栏。所以无线合成终端那块 3×3 从
+`ComponentInventoryBase` 派生（行囊组件也是这么挂的，实机验证过），
+代价是 `UpdateCraftingResult` / 取产物扣材料那套要自己抄一遍。
+
+抄的时候注意 `CraftingRecipesManager.FindMatchingRecipe` **两个平台最后一个参数不同**：
+联机版是 `ComponentPlayer`，插件版是 `float playerLevel`。
+
+## 5.24 抽象基类 + 每个子类各自的 `public static int Index`
+
+两个无线终端共用渲染逻辑，抽了个 `StashWirelessBlockBase`。
+**`Index` 字段必须留在每个具体子类上**，不能提到基类——
+插件版按类型找这个静态字段并写回真实索引，共用一个字段会让两个方块抢同一个索引。
+分级箱子（抽象基类 + 三个各带 `Index` 的子类）早就验证过这个写法可行。
+
+## 5.25 想让"产物的 data 取决于材料"，只能走 `GetAdHocCraftingRecipe`
+
+静态配方的 `CraftingRecipe.ResultValue` 是配方表里写死的一个整数，data 位固定。
+所以"合成后保留原物品身上的某个状态"（我们要保留无线终端绑定的存储终端编号）
+用静态配方**做不到**。
+
+原版留的口子在 `CraftingRecipesManager.FindMatchingRecipe` 开头：
+
+```csharp
+foreach (Block b in BlocksManager.Blocks) {
+    CraftingRecipe adHoc = b.GetAdHocCraftingRecipe(terrain, ingredients, heatLevel, …);
+    if (adHoc != null && MatchRecipe(adHoc.Ingredients, ingredients)) { craftingRecipe = adHoc; break; }
+}
+// 匹配不到才去翻静态表
+```
+
+**临时配方优先于静态表。** 原版自己用它做染色和修理（染色同样要保留衣服本体）。
+方块在这个方法里能拿到 `ingredients`（每格是 `craftingId:data`），
+于是可以从材料里读 data，算进产物。
+
+三个注意点：
+
+1. **签名两个平台不同**：联机版最后一个参数是 `ComponentPlayer`，插件版是 `float playerLevel`。
+2. **它会被每个方块在每次格子变动时问一遍**，不匹配必须尽快 return null。
+3. **临时配方枚举不出来**（`Recipes` 里没有它），所以静态配方**要留着**，
+   否则合成表和配方浏览器里再也找不到这东西怎么做。两条并存不冲突：
+   查得到的是静态那条，实际合成走临时那条。
+
+返回的配方里 `Ingredients` 不写 data = 通配（`CompareIngredients` 只在 required 写了 data 时才比 data），
+这样任何绑定状态的材料都收。
+
+## 5.26 联机版：客户端**不能**直接改槽位，而三个 API 的失败方式各不相同
+
+这是整个联机方案里最容易写错的一处，因为**三个 API 在客户端上表现完全不一样，而且都不报错**。
+
+```csharp
+// 1. AcquireItems：客户端直接什么都不做，返回 0
+public static int AcquireItems(IInventory inventory, int value, int count)
+{
+    if (CommonLib.WorkType != WorkType.Client) { …真正搬运…; return count; }
+    return 0;                       // ← 客户端走这里
+}
+```
+
+返回值的含义是**没塞进去的剩余数量**。所以客户端上「返回 0」看起来正好等于「全部收下了」——
+调用方一旦按这个语义去 `RemoveSlotItems`，东西就凭空消失了。本项目的填材料踩过这个坑。
+
+```csharp
+// 2. AddSlotItems / RemoveSlotItems：客户端毫无拦截，就地改本地副本
+public virtual void AddSlotItems(int slotIndex, int value, int count)
+{
+    AddNetSlotItems(slotIndex, value, count);   // ← 返回值被丢掉了
+    OnSlotChange(slotIndex);                    // ← 只有 Server 才真的推送
+}
+
+// 3. AddNetSlotItems：装不下时静默返回 false
+if ((GetSlotCount(i) != 0 && GetSlotValue(i) != value)
+    || GetSlotCount(i) + count > GetSlotCapacity(i, value)) return false;
+```
+
+客户端本地改完，服务端根本不知道；下一次 `InventorySync` 推回来就把改动冲掉。
+表现是「东西闪了一下又回去了」或者干脆少一份。
+
+**正确做法**：任何跨库存的搬运都不要逐格调 API，而是
+
+1. 在内存里把结果算出来（快照 → 模拟 → 只记变动过的格子）；
+2. 生成 `StashPlan`（一组 `SlotAssignment`：某库存某格最终放什么、放几个）；
+3. 交给 `StashPlatform.Current.Execute(plan)`——
+   单人/主机直接 `GameInventory.Apply`，客户端发 `StashOpPackage` 给服务端；
+4. 服务端 `StashServerGuard.Validate` 跑守恒校验（只许重排，不许凭空增减）再落地。
+
+顺带的好处：**中途失败等于什么都没发生**。逐格搬的版本一旦搬到一半失败，
+玩家的东西就散在两个容器里了。
+
+`IInventory.Id` 是联机版独有的成员，插件版接口里没有——共享代码里要用 `#if` 隔开。
+
+## 5.27 自己实现合成格时，产物格那一支**不能有 else**
+
+`ComponentInventoryBase` 的槽位是**存档存下来的**，包括产物格。
+而"当前匹配到哪条配方"是个**内存字段**，载入后是 null。两者天然不同步：
+
+```
+合成终端格子载入：… 网格内容 0:木板×1, 3:木板×1，产物格 9:木棍×4
+```
+
+产物格里躺着上一局算出来的木棍，但 `MatchedRecipe == null`。
+
+于是这样写就是个复制漏洞：
+
+```csharp
+// ✗ 错的
+if (slotIndex == ResultSlotIndex && MatchedRecipe != null) removed = TakeResult(count);
+else removed = base.RemoveSlotItems(slotIndex, count);   // ← 产物格掉进这里 = 白送
+```
+
+重进世界后第一次拖走产物，走的是 else，**产物给出去了但材料一个没扣**；
+紧接着 `UpdateResult` 又按原封不动的材料重算出一份产物，可以反复刷。
+
+原版 `ComponentCraftingTable` 没这个洞，因为它的产物格那一支**没有 else**：
+
+```csharp
+// ✓ 原版的形状
+int num = 0;
+if (slotIndex == ResultSlotIndex)
+{
+    if (m_matchedRecipe != null) { …扣材料、给产物… }
+    // 没有 else：配方为 null 就一件不给
+}
+else num = base.RemoveSlotItems(slotIndex, count);
+UpdateCraftingResult();   // 末尾无条件重算，状态自己就纠正回来了
+```
+
+顺带：原版**不在 `Load` 里重算**，所以载入后玩家会看到一个点不动的产物，
+要等下一次格子变动才纠正。我们在 `Load` 末尾补了一次 `UpdateResult()`（try/catch 兜底），
+省掉那一次"点了没反应"。

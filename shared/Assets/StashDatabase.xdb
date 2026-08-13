@@ -27,6 +27,12 @@
     <MemberSubsystemTemplate Name="StashBackpackBlockBehavior" Guid="5ae17c41-58f2-437a-ae7c-139d34f35de8" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
       <Parameter Name="Class" Guid="a99dc914-dfaa-48d2-b148-74e3f2dc63cc" Value="Game.SubsystemStashBackpackBlockBehavior" Type="string"/>
     </MemberSubsystemTemplate>
+    <MemberSubsystemTemplate Name="StashFurnaceBlockBehavior" Guid="16a6dad8-b9a8-4ac3-ac65-f22415d0d548" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
+      <Parameter Name="Class" Guid="9cff95ae-d804-45b3-88ed-eb2ef895b3dc" Value="Game.SubsystemStashFurnaceBlockBehavior" Type="string"/>
+    </MemberSubsystemTemplate>
+    <MemberSubsystemTemplate Name="StashFurnaceUpgradeBlockBehavior" Guid="48bea26a-6a17-4b66-a025-32addd8dc935" InheritanceParent="fefb9590-4972-4893-b02a-76063611b745">
+      <Parameter Name="Class" Guid="730e03aa-903b-4745-b36d-68c8e3967d62" Value="Game.SubsystemStashFurnaceUpgradeBlockBehavior" Type="string"/>
+    </MemberSubsystemTemplate>
   </ProjectTemplate>
   <EntityTemplate Name="StashChestCopper" Guid="08528624-5610-4128-bcb6-1de546cc1c76">
     <MemberComponentTemplate Name="Chest" Guid="fe5dccf1-762f-429c-ab0e-26f5294d5814" InheritanceParent="7312ec8c-10c7-4133-85b4-4a35bd44c956">
@@ -51,5 +57,39 @@
       <Parameter Name="StackMultiplier" Guid="11195508-29a8-4394-9d05-878c15746988" Value="16" Type="int"/>
     </MemberComponentTemplate>
     <MemberComponentTemplate Name="BlockEntity" Guid="567ba85a-4f02-4fa1-9238-bd81c85fbed2" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+
+  <!--
+    分级熔炉。三档的差别**只有 SpeedMultiplier**：格子数一律 5（= 2 个原料位 + 燃料 + 产物 + 残留），
+    和原版熔炉完全一致，所以界面能直接复用原版 FurnaceWidget。
+
+    SlotsCount 不能乱改：ComponentFurnace.Load 里 m_furnaceSize = SlotsCount - 3，
+    并且**超出 1~3 会直接抛 InvalidOperationException("Invalid furnace size.")**。
+    继承父用原版的 Furnace 组件模板（c91f7906…），这样 FireTimeRemaining / HeatLevel 这些
+    存档参数都是现成的，老熔炉升级过来不会丢状态。
+  -->
+  <EntityTemplate Name="StashFurnaceCopper" Guid="85fdc7ee-a971-4e8b-a1a4-88fbebf95157">
+    <MemberComponentTemplate Name="Furnace" Guid="45645189-e6eb-46b0-9991-ee2684e7b6a9" InheritanceParent="c91f7906-de35-4e94-ba6e-90cd55cd19d4">
+      <Parameter Name="Class" Guid="8f171cd7-56b0-40f6-82b5-1ee533062766" Value="Game.ComponentStashFurnace" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="d1eb148c-5991-4f70-96e6-aa77efd3ffc3" Value="5" Type="int"/>
+      <Parameter Name="SpeedMultiplier" Guid="ef42e6f4-edd0-4be2-89f1-ba2d2bfe1f7a" Value="2" Type="float"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="da24854e-8458-4428-a9fb-c440159e735d" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+  <EntityTemplate Name="StashFurnaceIron" Guid="881bd586-66e4-4905-b1a5-943ed3680a50">
+    <MemberComponentTemplate Name="Furnace" Guid="b6882e13-4d08-4238-a7cf-2d820ea7f260" InheritanceParent="c91f7906-de35-4e94-ba6e-90cd55cd19d4">
+      <Parameter Name="Class" Guid="c0166412-9711-498b-9314-cf44d24fd903" Value="Game.ComponentStashFurnace" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="77976b01-59aa-4518-b034-543bf8f0ba55" Value="5" Type="int"/>
+      <Parameter Name="SpeedMultiplier" Guid="16cce352-8411-4d51-af4f-c124a3c1205c" Value="4" Type="float"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="f77af60b-902f-4394-9d6e-ffe9e45cb4e0" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
+  </EntityTemplate>
+  <EntityTemplate Name="StashFurnaceDiamond" Guid="976e21a1-5e22-4a0c-b6be-38fdf82a6196">
+    <MemberComponentTemplate Name="Furnace" Guid="56d2accd-53b9-4446-9722-85093e2a1fd3" InheritanceParent="c91f7906-de35-4e94-ba6e-90cd55cd19d4">
+      <Parameter Name="Class" Guid="44210076-965d-43f4-9a8d-914f42c6d87b" Value="Game.ComponentStashFurnace" Type="string"/>
+      <Parameter Name="SlotsCount" Guid="6d1030c6-b1a3-47ef-a6a0-869cae6d6bcc" Value="5" Type="int"/>
+      <Parameter Name="SpeedMultiplier" Guid="20758789-38e9-4d8e-aba8-5db1474e8571" Value="8" Type="float"/>
+    </MemberComponentTemplate>
+    <MemberComponentTemplate Name="BlockEntity" Guid="5bd33651-158d-4315-9d03-9ce535d35c76" InheritanceParent="09a85cba-d94e-41b8-9497-f20ed942c17e"/>
   </EntityTemplate>
 </Mod>

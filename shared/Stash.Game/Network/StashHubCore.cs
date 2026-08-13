@@ -15,7 +15,15 @@ public static class StashHubCore
         return StashNetworkScanner.ToInventories(StashNetworkScanner.Scan(terrain, blockEntities, hub));
     }
 
-    public static bool OpenTerminal(ComponentPlayer player, List<IInventory> containers, string? title = null)
+    /// <param name="withCrafting">
+    /// true = 无线合成终端，界面右下角多一块 3×3 合成格。
+    /// 合成格挂在玩家实体上（<c>ComponentStashCraftingGrid</c>），跟着存档走。
+    /// </param>
+    public static bool OpenTerminal(
+        ComponentPlayer player,
+        List<IInventory> containers,
+        string? title = null,
+        bool withCrafting = false)
     {
         if (player?.ComponentGui == null)
         {
@@ -28,7 +36,19 @@ public static class StashHubCore
             return true;
         }
 
-        player.ComponentGui.ModalPanelWidget = new StashTerminalWidget(player, containers, title ?? StashText.HubName);
+        ComponentStashCraftingGrid? grid = null;
+        if (withCrafting)
+        {
+            grid = player.Entity.FindComponent<ComponentStashCraftingGrid>(throwOnError: false);
+            if (grid == null)
+            {
+                // 组件没注入上（旧存档 / 注入失败）。不该因此打不开终端，退回普通终端就行。
+                Log.Warning("[Stash] 玩家身上没有合成格组件，无线合成终端退回普通终端。");
+            }
+        }
+
+        player.ComponentGui.ModalPanelWidget = new StashTerminalWidget(
+            player, containers, title ?? StashText.HubName, grid);
         AudioManager.PlaySound("Audio/UI/ButtonClick", 1f, 0f, 0f);
         return true;
     }

@@ -14,7 +14,8 @@ public class SubsystemStashWirelessBlockBehavior : SubsystemBlockBehavior
 {
     private SubsystemTerrain m_terrain = null!;
 
-    public override int[] HandledBlocks => new[] { StashWirelessTerminalBlock.Index };
+    public override int[] HandledBlocks =>
+        new[] { StashWirelessTerminalBlock.Index, StashWirelessCraftingTerminalBlock.Index };
 
     public override void Load(TemplatesDatabase.ValuesDictionary valuesDictionary)
     {
@@ -32,7 +33,7 @@ public class SubsystemStashWirelessBlockBehavior : SubsystemBlockBehavior
 
         int activeSlot = inventory.ActiveSlotIndex;
         int held = inventory.GetSlotValue(activeSlot);
-        if (Terrain.ExtractContents(held) != StashWirelessTerminalBlock.Index)
+        if (!StashWirelessBlockBase.IsWireless(Terrain.ExtractContents(held)))
         {
             return false;
         }
@@ -63,11 +64,12 @@ public class SubsystemStashWirelessBlockBehavior : SubsystemBlockBehavior
         {
             // 绑定：把编号写进这一件物品的 data 位。
             inventory.RemoveSlotItems(activeSlot, 1);
-            inventory.AddSlotItems(activeSlot, StashWirelessTerminalBlock.Bind(held, result.HubId), 1);
+            inventory.AddSlotItems(activeSlot, StashWirelessBlockBase.Bind(held, result.HubId), 1);
         }
         else if (result.HubId > 0 && componentMiner.ComponentPlayer is { } player && player.PlayerData.IsMainPlayer)
         {
-            StashWirelessUse.OpenRemote(player, Project, result.HubId);
+            StashWirelessUse.OpenRemote(player, Project, result.HubId,
+                StashWirelessBlockBase.HasCraftingGrid(Terrain.ExtractContents(held)));
         }
 
         return true;

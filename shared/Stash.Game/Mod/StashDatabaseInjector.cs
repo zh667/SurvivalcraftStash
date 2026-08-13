@@ -29,6 +29,10 @@ public static class StashDatabaseInjector
     private const string BackpackClassGuid = "b6f1c0de-2f77-4f0a-8f2a-5c9d1f0a7e12";
     private const string BackpackSlotsGuid = "b6f1c0de-2f77-4f0a-8f2a-5c9d1f0a7e13";
 
+    private const string CraftingGridMemberGuid = "bcde5dc9-130c-4b6c-9af2-87d05a25215f";
+    private const string CraftingGridClassGuid = "d4fb82d9-24b5-4aed-b0fa-a12e136abb95";
+    private const string CraftingGridSlotsGuid = "3424faf7-4114-466d-96ca-e5ccf82b2f4a";
+
     public static void Inject(XElement? database)
     {
         if (database == null)
@@ -44,6 +48,8 @@ public static class StashDatabaseInjector
                 Log.Warning("[Stash] 数据库里找不到玩家实体模板，背包组件没能挂上。");
                 return;
             }
+
+            AddCraftingGrid(database, player);
 
             if (FindByGuid(database, BackpackMemberGuid) != null)
             {
@@ -71,6 +77,39 @@ public static class StashDatabaseInjector
         {
             Log.Warning($"[Stash] 注入背包组件失败：{exception.Message}");
         }
+    }
+
+    /// <summary>
+    /// 给玩家挂一个 3×3 的合成格，无线合成终端要用。
+    ///
+    /// 组件类型是 <c>ComponentStashCraftingGrid</c> 而**不是** <c>ComponentCraftingTable</c>——
+    /// 玩家身上本来就有一个 2×2 的合成台，再挂个同类型的会让
+    /// <c>ComponentGui</c> 里那句 <c>FindComponent&lt;ComponentCraftingTable&gt;(throwOnError: true)</c>
+    /// 出事，按 E 直接打不开物品栏。详见 ComponentStashCraftingGrid 的类注释。
+    /// </summary>
+    private static void AddCraftingGrid(XElement database, XElement player)
+    {
+        if (FindByGuid(database, CraftingGridMemberGuid) != null)
+        {
+            return;
+        }
+
+        player.Add(new XElement("MemberComponentTemplate",
+            new XAttribute("Name", "StashCraftingGrid"),
+            new XAttribute("Guid", CraftingGridMemberGuid),
+            new XAttribute("InheritanceParent", ChestComponentGuid),
+            new XElement("Parameter",
+                new XAttribute("Name", "Class"),
+                new XAttribute("Guid", CraftingGridClassGuid),
+                new XAttribute("Value", "Game.ComponentStashCraftingGrid"),
+                new XAttribute("Type", "string")),
+            new XElement("Parameter",
+                new XAttribute("Name", "SlotsCount"),
+                new XAttribute("Guid", CraftingGridSlotsGuid),
+                new XAttribute("Value", global::Game.ComponentStashCraftingGrid.RequiredSlots.ToString()),
+                new XAttribute("Type", "int"))));
+
+        Log.Information("[Stash] 合成格组件已注入玩家实体模板。");
     }
 
     private static XElement? FindByGuid(XElement root, string guid)

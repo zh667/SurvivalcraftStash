@@ -27,10 +27,27 @@ public static class StashUiInjector
         if (oldWidget != null)
         {
             s_injected.Remove(oldWidget);
+
+            // 关掉合成终端时报一次残留。那块 3×3 挂在玩家身上、跟着存档走，
+            // 关了界面从别处一格都看不见——不打这一行，"东西留在合成格里"
+            // 和"东西没了"在日志上长得一模一样。
+            if (oldWidget is StashTerminalWidget)
+            {
+                gui?.m_componentPlayer?.Entity
+                    ?.FindComponent<ComponentStashCraftingGrid>(throwOnError: false)
+                    ?.ReportLeftovers("关闭");
+            }
         }
 
         // 界面一关就把"正在打字"复位，否则搜索框带着焦点被销毁，按键会一直被吃掉。
         StashHotkeys.TypingInProgress = false;
+
+        // 配方浮层是跟着某个界面开的（"＋"要往那个界面的合成格里填料）。
+        // 界面换了它就失去了意义，而且藏起来的旧面板得放回去，否则玩家再打开会看到空白。
+        if (StashOverlayHost.IsOpen)
+        {
+            StashOverlayHost.Close(gui);
+        }
 
         if (newWidget == null || s_injected.Contains(newWidget) || !StashPlatform.IsReady)
         {
@@ -70,13 +87,48 @@ public static class StashUiInjector
             return;
         }
 
-        MakeRoomForBar(host);
+        float barHeight = MakeRoomForBar(host);
 
         // 我们自己的容器界面已经自带"物品栏 / 背包"切换，别再挂一个。
-        host.Children.Add(new StashButtonBar(gui, targets, allowSideToggle: panel is not StashContainerWidget));
+        host.Children.Add(new StashButtonBar(
+            gui, targets,
+            allowSideToggle: panel is not StashContainerWidget,
+            barHeight: barHeight,
+            craftTarget: FindCraftTarget(containers)));
         s_injected.Add(panel);
 
         Log.Information($"[Stash] {panel.GetType().Name} 挂上 {targets.Count} 个整理按钮");
+    }
+
+    /// <summary>
+    /// 找出这个界面里能"填材料"的格子。按 E 打开的是 2×2，工作台是 3×3，熔炉是 N×1。
+    ///
+    /// 合成格的边长直接读 <c>ComponentCraftingTable.m_craftingGridSize</c>
+    /// （两个平台都是 public 字段），不自己按 <c>sqrt(SlotsCount - 2)</c> 反推。
+    ///
+    /// 熔炉的原料槽数按 <c>SlotsCount - 3</c> 算——这正是 <c>ComponentFurnace.Load</c>
+    /// 里的算法（末尾三格固定是燃料/产物/残留），而且它**只接受 1~3**，超出直接抛异常。
+    /// </summary>
+    private static StashCraftTarget? FindCraftTarget(List<PanelContainer> containers)
+    {
+        foreach (PanelContainer container in containers)
+        {
+            if (container.Inventory is ComponentCraftingTable table && table.m_craftingGridSize >= 2)
+            {
+                return new StashCraftTarget(table, table.m_craftingGridSize, table.m_craftingGridSize, IsFurnace: false);
+            }
+
+            if (container.Inventory is ComponentFurnace furnace)
+            {
+                int inputs = furnace.SlotsCount - 3;
+                if (inputs >= 1)
+                {
+                    return new StashCraftTarget(furnace, inputs, 1, IsFurnace: true);
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -96,7 +148,8 @@ public static class StashUiInjector
     ///
     /// 子控件都是按显式坐标（左上角锚定）摆的，底板变高只会在下面多出一块空白，格子不会动。
     /// </summary>
-    private static void MakeRoomForBar(ContainerWidget host)
+    /// <returns>实际腾出来的高度。空间不够时会小于 <see cref="StashButtonBar.BarHeight"/>。</returns>
+    private static float MakeRoomForBar(ContainerWidget host)
     {
         // 面板底板：取最大的那块 BevelledRectangleWidget（一个面板通常就一块）。
         BevelledRectangleWidget? background = null;
@@ -109,21 +162,38 @@ public static class StashUiInjector
             }
         }
 
+        // 加高之前先看画布还剩多少。
+        //
+        // UI 缩放拉到 1.2 时画布只有 398 高，而原版面板本身就 382——只剩 16 单位。
+        // 照直加 40 会让面板变成 422，被 GameWidget 的 ClampToBounds 上下各切掉 12，
+        // 按钮的下半截就没了。这里改成"有多少用多少"，实在不够就压缩按钮条本身。
+        float panelHeight = background?.Size.Y ?? (host as CanvasWidget)?.Size.Y ?? 0f;
+        float barHeight = StashButtonBar.BarHeight;
+        if (panelHeight > 0f && !StashScreenMetrics.HasRoomBelow(panelHeight, barHeight))
+        {
+            float room = StashScreenMetrics.PanelBudget.Y - panelHeight;
+            barHeight = MathUtils.Clamp(room, StashButtonBar.MinBarHeight, StashButtonBar.BarHeight);
+            Log.Information($"[Stash] 画布不够高（面板 {panelHeight:0}，预算 {StashScreenMetrics.PanelBudget.Y:0}），"
+                + $"按钮条压到 {barHeight:0}。玩家可以把设置里的界面缩放调小一点。");
+        }
+
         if (background != null && background.Size.Y >= 0f)
         {
-            background.Size = new Vector2(background.Size.X, background.Size.Y + StashButtonBar.BarHeight);
+            background.Size = new Vector2(background.Size.X, background.Size.Y + barHeight);
         }
 
         // 根节点自己写了 Size 的（我们自己的界面就是），也要跟着长高，
         // 否则 MeasureOverride 会用根节点那个偏小的值把底板裁掉。
         if (host is CanvasWidget canvas && canvas.Size.Y >= 0f)
         {
-            canvas.Size = new Vector2(canvas.Size.X, canvas.Size.Y + StashButtonBar.BarHeight);
+            canvas.Size = new Vector2(canvas.Size.X, canvas.Size.Y + barHeight);
         }
         else if (background == null)
         {
             Log.Warning($"[Stash] {host.GetType().Name} 既没有底板也没写 Size，整理按钮只能贴底边");
         }
+
+        return barHeight;
     }
 
     /// <summary>
@@ -165,5 +235,14 @@ public static class StashUiInjector
         return targets;
     }
 
-    public static void Reset() => s_injected.Clear();
+    public static void Reset()
+    {
+        s_injected.Clear();
+        StashOverlayHost.Reset();
+        StashDiag.Reset();
+
+        // 配方索引里存的是方块索引，而插件版每局都可能重新分配（SCAPI 会改写 Block.Index），
+        // 换世界不清就会拿着上一局的号去查表。
+        StashRecipeIndex.Invalidate();
+    }
 }

@@ -46,7 +46,7 @@ public static class StashWirelessUse
         }
 
         // 否则 → 远程打开已绑定的终端
-        int hubId = StashWirelessTerminalBlock.GetBoundHubId(heldValue);
+        int hubId = StashWirelessBlockBase.GetBoundHubId(heldValue);
         if (hubId <= 0)
         {
             Notify(player, StashText.WirelessNotBound);
@@ -73,7 +73,8 @@ public static class StashWirelessUse
     }
 
     /// <summary>拿到 hubId 后真正开界面（客户端一侧执行）。</summary>
-    public static bool OpenRemote(ComponentPlayer player, Project project, int hubId)
+    /// <param name="withCrafting">手里那台是不是无线**合成**终端。</param>
+    public static bool OpenRemote(ComponentPlayer player, Project project, int hubId, bool withCrafting = false)
     {
         StashHubRecord? hub = StashHubNaming.Find(hubId);
         if (hub == null)
@@ -83,7 +84,7 @@ public static class StashWirelessUse
         }
 
         List<IInventory> containers = StashHubCore.ScanInventories(project, new Point3(hub.X, hub.Y, hub.Z));
-        return StashHubCore.OpenTerminal(player, containers, hub.Name);
+        return StashHubCore.OpenTerminal(player, containers, hub.Name, withCrafting);
     }
 
     private static void Notify(ComponentPlayer player, string message) =>

@@ -52,6 +52,30 @@ public static class StashText
     };
 
 
+    public static string FurnaceName(StashFurnaceTier tier) => tier.Key switch
+    {
+        "copper" => UseEnglish ? "Copper Furnace" : "铜熔炉",
+        "iron" => UseEnglish ? "Iron Furnace" : "铁熔炉",
+        "diamond" => UseEnglish ? "Diamond Furnace" : "钻石熔炉",
+        _ => UseEnglish ? "Furnace" : "熔炉",
+    };
+
+    public static string FurnaceUpgradeName(int upgradeData) => upgradeData switch
+    {
+        0 => UseEnglish ? "Copper Furnace Upgrade" : "铜熔炉升级件",
+        1 => UseEnglish ? "Iron Furnace Upgrade" : "铁熔炉升级件",
+        2 => UseEnglish ? "Diamond Furnace Upgrade" : "钻石熔炉升级件",
+        _ => UseEnglish ? "Furnace Upgrade Kit" : "熔炉升级件",
+    };
+
+    /// <summary>开炉子时飘一句，告诉玩家这一档快多少。倍率不写死，跟着档位表走。</summary>
+    public static string FurnaceOpened(StashFurnaceTier tier) => UseEnglish
+        ? $"{FurnaceName(tier)} · {tier.SpeedMultiplier:0.#}x speed"
+        : $"{FurnaceName(tier)} · {tier.SpeedMultiplier:0.#} 倍速度";
+
+    public static string FurnaceUpgradeWrongTier =>
+        UseEnglish ? "This upgrade does not fit that furnace" : "这个升级件配不上这座熔炉";
+
     public static string UpgradeWrongTier =>
         UseEnglish ? "This upgrade does not fit that chest" : "这个升级件配不上这个箱子";
 
@@ -139,6 +163,23 @@ public static class StashText
     public static string WirelessHubGone =>
         UseEnglish ? "That storage terminal is gone" : "绑定的存储终端已经不在了";
 
+    public static string CraftTerminalUnbound =>
+        UseEnglish ? "Wireless Crafting Terminal (unbound)" : "无线合成终端（未绑定）";
+
+    public static string CraftTerminalBound(string hubName) =>
+        UseEnglish ? $"Wireless Crafting Terminal → {hubName}" : $"{hubName}的远程合成终端";
+
+    /// <summary>合成无线合成终端时的说明：绑定会被带过来。</summary>
+    public static string CraftTerminalRecipeDescription => UseEnglish
+        ? "Keeps the binding of the terminal you put in"
+        : "沿用放进去那台终端的绑定";
+
+    /// <summary>终端里那块合成格的小标题。</summary>
+    public static string CraftingGrid => UseEnglish ? "Crafting" : "合成";
+
+    /// <summary>残留格里的淡色字（水桶合面团会退回空桶那种）。原版工作台也这么标。</summary>
+    public static string CraftRemains => UseEnglish ? "left" : "剩余";
+
     public static string HubName => UseEnglish ? "Storage Terminal" : "存储终端";
 
     public static string TerminalStatus(int containers, int kinds, int page, int pages) => UseEnglish
@@ -160,7 +201,93 @@ public static class StashText
 
 
 
-    public static string Upgraded =>
+    // ───────────────────────────── 配方浏览器 ─────────────────────────────
+
+    public static string RecipeBrowser => UseEnglish ? "Recipes" : "配方";
+
+    public static string BrowserTitle => UseEnglish ? "Recipe Browser" : "配方浏览";
+
+    public static string Bookmarks => UseEnglish ? "Bookmarks" : "收藏";
+
+    public static string Close => UseEnglish ? "Close" : "关闭";
+
+    public static string AllItems => UseEnglish ? "All items" : "全部物品";
+
+    public static string ShowRecipes => UseEnglish ? "Recipe" : "合成配方";
+
+    public static string AddBookmark => UseEnglish ? "Bookmark" : "收藏";
+
+    public static string RemoveBookmark => UseEnglish ? "Bookmarked" : "已收藏";
+
+    /// <summary>
+    /// **不要用 ◀ ▶**：SC 的位图字体里没有这两个字形，实机会画成两个方块
+    /// （实机反馈"怎么还有两个按钮里面是方块"）。▲▼ 是有的，翻页仍然用那两个。
+    /// </summary>
+    public static string PrevRecipe => UseEnglish ? "Prev" : "上一个";
+
+    public static string NextRecipe => UseEnglish ? "Next" : "下一个";
+
+    /// <summary>把配方需要的材料从物品栏和行囊搬进合成格。</summary>
+    public static string Fill => UseEnglish ? "Fill" : "填材料";
+
+    /// <summary>顺着材料钻进去之后往回退一层。</summary>
+    public static string Back => UseEnglish ? "Back" : "返回";
+
+    /// <summary>钻了不止一层时把深度写出来，玩家才知道还要按几次。</summary>
+    public static string BackDepth(int depth) => UseEnglish ? $"Back {depth}" : $"返回 {depth}";
+
+    public static string NoRecipe => UseEnglish ? "No recipe" : "没有合成配方";
+
+    /// <summary>冶炼配方的标记，配着成品下面那簇火一起显示。</summary>
+    public static string NeedsFurnace => UseEnglish ? "in a furnace" : "需要熔炉";
+
+    /// <summary>缺料时的一行提示；具体缺哪几格由红底标出来。</summary>
+    public static string SomeIngredientsMissing =>
+        UseEnglish ? "red = you don't have it" : "红底的材料你没有";
+
+    public static string PickAnItem => UseEnglish ? "Pick an item" : "点一个物品看配方";
+
+    public static string RecipeCounter(int index, int total) =>
+        UseEnglish ? $"{index}/{total}" : $"{index}/{total}";
+
+    public static string BrowserStatus(int shown, int total, int page, int pages) => UseEnglish
+        ? $"{shown}/{total} items · page {page}/{pages}"
+        : $"{shown}/{total} 个物品 · 第 {page}/{pages} 页";
+
+    /// <summary>格子装不下这个配方。要说清楚差在哪，否则玩家会以为是缺材料。</summary>
+    public static string FillRecipeTooLarge(int width, int height, int columns, int rows) => UseEnglish
+        ? $"Recipe is {width}x{height}, this grid is only {columns}x{rows} — use a crafting table"
+        : $"配方是 {width}×{height} 的，这里只有 {columns}×{rows} 格——去工作台上做";
+
+    /// <summary>拿合成配方去点熔炉的"填材料"。</summary>
+    public static string FillNeedsCraftingGrid =>
+        UseEnglish ? "That is a crafting recipe — not a furnace one" : "这是合成配方，熔炉做不了";
+
+    public static string FillNeedsFurnace =>
+        UseEnglish ? "That is a smelting recipe — use a furnace" : "这是冶炼配方，要用熔炉";
+
+    public static string FillNoRoomToClear =>
+        UseEnglish ? "No room to clear the crafting grid first" : "合成格里的东西退不回物品栏，先腾个位置";
+
+    public static string FillMissing(string what) =>
+        UseEnglish ? $"Missing: {what}" : $"缺：{what}";
+
+    public static string FillFailed => UseEnglish ? "Could not fill" : "没能填进去";
+
+    public static string Filled(int sets) => UseEnglish ? $"Filled {sets}x" : $"填了 {sets} 份";
+
+    /// <summary>创造模式的物品栏不能当取料来源，理由见 StashCraftFill。</summary>
+    public static string FillNoUsableSource =>
+        UseEnglish ? "No inventory to pull from (creative mode is skipped)" : "没有可取料的库存（创造模式的物品栏不算）";
+
+    /// <summary>联机客户端只是把计划发出去了，格子要等服务端回包才动。</summary>
+    public static string FillSent =>
+        UseEnglish ? "Sent to server…" : "已请求服务端填料…";
+
+    public static string ChestUpgraded =>
         UseEnglish ? "Chest upgraded" : "箱子已升级";
+
+    public static string FurnaceUpgraded =>
+        UseEnglish ? "Furnace upgraded" : "熔炉已升级";
 
 }

@@ -18,18 +18,24 @@
   取这么大等于永不磨损。（物品栏那条耐久条是 ClothingBlock 整个方块的属性，
   所有衣物共用一个 Durability=15，没法只给背包关掉；但它会一直是满的。）
   ArmorProtection=0：背包不提供防护，占了最外层也不该顶替护甲的作用。
+
+  CanBeDyed=False：**故意的**。ClothingBlock.GetCreativeValues() 对可染色的衣物会
+  逐个吐出 16 种颜色的变体：
+      int colorsCount = ((!clothingData.CanBeDyed) ? 1 : 16);
+  三档背包各 16 色 = 48 条，在物品目录里连着刷一屏半，全是长得差不多的包
+  （实机反馈"这怎么一堆行囊"）。三档本来就有各自的配色，再叠染色没有意义。
 -->
 <Mod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ClothingData Class="Game.ClothingData" Index="38" DisplayName="[ClothingBlock:38]" Description="[ClothingBlock:38]"
                 Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.2" MovementSpeedFactor="1"
-                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="5"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="False" Layer="5"
                 PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackCopper" ImpactSoundsFolder=""/>
   <ClothingData Class="Game.ClothingData" Index="39" DisplayName="[ClothingBlock:39]" Description="[ClothingBlock:39]"
                 Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.3" MovementSpeedFactor="1"
-                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="5"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="False" Layer="5"
                 PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackIron" ImpactSoundsFolder=""/>
   <ClothingData Class="Game.ClothingData" Index="40" DisplayName="[ClothingBlock:40]" Description="[ClothingBlock:40]"
                 Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.2" MovementSpeedFactor="1"
-                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="True" Layer="5"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="False" Layer="5"
                 PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackDiamond" ImpactSoundsFolder=""/>
 </Mod>

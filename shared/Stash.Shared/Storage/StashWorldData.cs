@@ -54,6 +54,30 @@ public sealed class PlayerStashData
 
     public SortMethod SortMethod { get; set; } = SortMethod.CategoryThenDisplayOrder;
 
+    /// <summary>配方浏览器里收藏的物品值。顺序 = 玩家添加的顺序。</summary>
+    public List<int> Bookmarks { get; set; } = new();
+
+    /// <summary>收藏最多留这么多条。再多界面上翻页也找不着了，而且存档会白白变大。</summary>
+    public const int MaxBookmarks = 64;
+
+    /// <summary>返回 true 表示加上了，false 表示取消了。</summary>
+    public bool ToggleBookmark(int value)
+    {
+        if (Bookmarks.Remove(value))
+        {
+            return false;
+        }
+
+        Bookmarks.Add(value);
+        while (Bookmarks.Count > MaxBookmarks)
+        {
+            // 满了就顶掉最早的那条，别让玩家点了没反应。
+            Bookmarks.RemoveAt(0);
+        }
+
+        return true;
+    }
+
     public HashSet<int> LockedSlotSet() => new(LockedSlots);
 
     public Dictionary<int, int> MemorySlotMap()

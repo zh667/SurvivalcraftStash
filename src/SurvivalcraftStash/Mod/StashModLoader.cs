@@ -63,30 +63,50 @@ public class StashModLoader : ModLoader
     public override void OnModalPanelWidgetSet(ComponentGui gui, Widget oldWidget, Widget newWidget) =>
         StashUiInjector.OnModalPanelChanged(gui, oldWidget, newWidget);
 
+    /// <summary>
+    /// ─────────────────────────────────────────────────────────────────────────
+    /// **<c>OnLoadingFinished</c> 不是"进入世界"，是"应用启动时 mod 加载完毕"，
+    /// 一个进程只触发一次。**
+    ///
+    /// 实机日志戳穿了这一点：同一次启动里进了 5 次世界（`Entered screen "Game"` 五次），
+    /// 但我们的每局初始化只跑了 1 次。而且这个时刻 <c>Project</c> 根本还没建起来——
+    /// 紧随其后的是 `Entered screen "MainMenu"`，所以
+    /// `[Stash] OnLoadingFinished 时还拿不到 SubsystemGameInfo` 那条警告每次启动都出现，
+    /// 它不是偶发，是必然。
+    ///
+    /// 后果不止是日志少几行：<c>StashUiInjector.Reset()</c>（连带清配方索引、清残留浮层）
+    /// 和 <c>StashStore.Load()</c> 都挂在这里，换世界时**一次都不会重来**。
+    ///
+    /// 真正的每局钩子是 <c>GameManager.ProjectLoaded</c>——它在 Project 构造完成、
+    /// 子系统和实体都装好之后触发（GameManager.cs:186 / 219，单机和联机客户端两条路都有）。
+    /// ─────────────────────────────────────────────────────────────────────────
+    /// </summary>
     public override void OnLoadingFinished(List<Action> actions)
     {
-        actions.Add(() =>
-        {
-            SubsystemGameInfo? gameInfo = GameManager.Project?.FindSubsystem<SubsystemGameInfo>(throwOnError: false);
-            if (gameInfo != null)
-            {
-                StashStore.Load(gameInfo);
-            }
-            else
-            {
-                // 实机日志里就是走的这条，而且原来一句话都不打，查了一轮才发现。
-                // StashStore 现在会在第一次读写时自己补读，这里只留个记号。
-                Log.Warning("[Stash] OnLoadingFinished 时还拿不到 SubsystemGameInfo，世界数据推迟到首次读写时再读。");
-            }
-
-            StashUiInjector.Reset();
-            StashSelfCheck.Run();
-        });
+        GameManager.ProjectLoaded -= OnProjectLoaded;
+        GameManager.ProjectLoaded += OnProjectLoaded;
 
         // 联机版的 ModLoader 没有"世界保存"钩子，所以退出世界时收尾。
         // 平时的改动（锁定槽位等）在改的时候就落盘，文件很小，代价可以忽略。
         GameManager.ProjectDisposed -= OnProjectDisposed;
         GameManager.ProjectDisposed += OnProjectDisposed;
+    }
+
+    private static void OnProjectLoaded(Project project)
+    {
+        SubsystemGameInfo? gameInfo = project.FindSubsystem<SubsystemGameInfo>(throwOnError: false);
+        if (gameInfo != null)
+        {
+            StashStore.Load(gameInfo);
+        }
+        else
+        {
+            // StashStore 会在第一次读写时自己补读，这里只留个记号。
+            Log.Warning("[Stash] 进世界时拿不到 SubsystemGameInfo，世界数据推迟到首次读写时再读。");
+        }
+
+        StashUiInjector.Reset();
+        StashSelfCheck.Run();
     }
 
     private static void OnProjectDisposed(Project project)

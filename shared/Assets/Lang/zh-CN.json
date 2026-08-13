@@ -54,6 +54,41 @@
       "DisplayName": "无线终端",
       "Description": "拿着它右键一个存储终端即可绑定，之后对着空处右键就能远程打开那个终端。绑定后名字会变成「存储终端N的远程终端」。",
       "CRDescription:0": "无线终端"
+    },
+    "StashCopperFurnaceBlock:0": {
+      "DisplayName": "铜熔炉",
+      "Description": "烧炼速度是原版熔炉的 2 倍，格子布局不变。用铜锭围住熔炉合成，或拿铜熔炉升级件对着熔炉使用。",
+      "CRDescription:0": "铜熔炉"
+    },
+    "StashIronFurnaceBlock:0": {
+      "DisplayName": "铁熔炉",
+      "Description": "烧炼速度是原版熔炉的 4 倍。",
+      "CRDescription:0": "铁熔炉"
+    },
+    "StashDiamondFurnaceBlock:0": {
+      "DisplayName": "钻石熔炉",
+      "Description": "烧炼速度是原版熔炉的 8 倍。",
+      "CRDescription:0": "钻石熔炉"
+    },
+    "StashFurnaceUpgradeBlock:0": {
+      "DisplayName": "铜熔炉升级件",
+      "Description": "拿着它对原版熔炉使用，就地升级成铜熔炉，炉里的东西和火都不受影响。",
+      "CRDescription:0": "铜熔炉升级件"
+    },
+    "StashFurnaceUpgradeBlock:1": {
+      "DisplayName": "铁熔炉升级件",
+      "Description": "拿着它对铜熔炉使用。",
+      "CRDescription:0": "铁熔炉升级件"
+    },
+    "StashFurnaceUpgradeBlock:2": {
+      "DisplayName": "钻石熔炉升级件",
+      "Description": "拿着它对铁熔炉使用。",
+      "CRDescription:0": "钻石熔炉升级件"
+    },
+    "StashWirelessCraftingTerminalBlock:0": {
+      "DisplayName": "无线合成终端",
+      "Description": "无线终端的升级版：远程打开绑定的存储终端，界面里还多一块 3×3 合成格。点「配方」选好配方后按「填材料」，材料会从存储网络、物品栏和行囊里自动凑齐。用无线终端合成它时会**沿用原来的绑定**，不用重新绑。",
+      "CRDescription:0": "无线合成终端"
     }
   }
 }

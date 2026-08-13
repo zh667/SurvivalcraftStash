@@ -69,6 +69,53 @@
   </Recipe>
 
 
+  <!--
+    分级熔炉。三档的差别只有"烧得多快"（2/4/8 倍），格子布局和原版熔炉一样。
+    配料刻意和箱子那组区分开：箱子升级件中心是**木板**，熔炉升级件中心是**煤块**，
+    合成表里一眼能看出这是给炉子用的。
+  -->
+
+  <!-- 熔炉升级件：原版炉→铜 -->
+  <Recipe Result="StashFurnaceUpgradeBlock:0" ResultCount="1" RequiredHeatLevel="0" a="copperingot" b="coalchunk" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
+  <!-- 熔炉升级件：铜→铁 -->
+  <Recipe Result="StashFurnaceUpgradeBlock:1" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="coalchunk" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
+  <!-- 熔炉升级件：铁→钻石 -->
+  <Recipe Result="StashFurnaceUpgradeBlock:2" ResultCount="1" RequiredHeatLevel="0" a="diamond" b="coalblock" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
+  <!-- 直接合成各档熔炉：上一档 + 一圈对应材料 -->
+  <Recipe Result="StashCopperFurnaceBlock" ResultCount="1" RequiredHeatLevel="0" a="copperingot" b="furnace" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
+  <Recipe Result="StashIronFurnaceBlock" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="stashcopperfurnace" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
+  <Recipe Result="StashDiamondFurnaceBlock" ResultCount="1" RequiredHeatLevel="0" a="diamond" b="stashironfurnace" Description="[0]">
+    "aaa"
+    "aba"
+    "aaa"
+  </Recipe>
+
+
   <!-- 存储终端：贴着它的容器连成一片，点它统一检索取放 -->
   <Recipe Result="StashHubBlock" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="chest" c="diamond" Description="[0]">
     "aca"
@@ -79,6 +126,22 @@
 
   <!-- 无线终端：拿它右键一个存储终端就绑定，之后对着空处右键远程打开 -->
   <Recipe Result="StashWirelessTerminalBlock" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="diamond" c="germaniumchunk" Description="[0]">
+    "aca"
+    "aba"
+    "aaa"
+  </Recipe>
+
+
+  <!--
+    无线合成终端：无线终端 + 工作台 + 一圈铁。
+
+    这条静态配方**只负责"能被查到"**——合成表和配方浏览器都是按静态表枚举的。
+    真正合成时走的是 StashWirelessCraftingTerminalBlock.GetAdHocCraftingRecipe：
+    原版会先问每个方块要一遍临时配方，那边能读到格子里**那台终端实际的 data**，
+    从而把绑定编号原样带到产物上（静态配方的 Result 是死的，做不到）。
+    所以这里显示的产物是未绑定的图标，实际做出来会保留绑定。
+  -->
+  <Recipe Result="StashWirelessCraftingTerminalBlock" ResultCount="1" RequiredHeatLevel="0" a="ironingot" b="stashwirelessterminal" c="craftingtable" Description="[0]">
     "aca"
     "aba"
     "aaa"

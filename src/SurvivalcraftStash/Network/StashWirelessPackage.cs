@@ -131,7 +131,7 @@ public sealed class StashWirelessPackage : IPackage
 
         int activeSlot = inventory.ActiveSlotIndex;
         int held = inventory.GetSlotValue(activeSlot);
-        if (Terrain.ExtractContents(held) != StashWirelessTerminalBlock.Index)
+        if (!StashWirelessBlockBase.IsWireless(Terrain.ExtractContents(held)))
         {
             return;
         }
@@ -157,7 +157,7 @@ public sealed class StashWirelessPackage : IPackage
         if (result.Bound)
         {
             inventory.RemoveSlotItems(activeSlot, 1);
-            inventory.AddSlotItems(activeSlot, StashWirelessTerminalBlock.Bind(held, result.HubId), 1);
+            inventory.AddSlotItems(activeSlot, StashWirelessBlockBase.Bind(held, result.HubId), 1);
             return;
         }
 
@@ -205,7 +205,16 @@ public sealed class StashWirelessPackage : IPackage
             }
         }
 
-        StashHubCore.OpenTerminal(player, containers, HubName);
+        // 手里那台是普通终端还是合成终端，**客户端自己看手上拿的就知道**，
+        // 不用往包里加字段——加了就得考虑新旧客户端的兼容，不值当。
+        bool withCrafting = false;
+        if (player.ComponentMiner?.Inventory is { } held)
+        {
+            withCrafting = StashWirelessBlockBase.HasCraftingGrid(
+                Terrain.ExtractContents(held.GetSlotValue(held.ActiveSlotIndex)));
+        }
+
+        StashHubCore.OpenTerminal(player, containers, HubName, withCrafting);
     }
 
     private ComponentPlayer? FindPlayer(ProjectNet projectNet)

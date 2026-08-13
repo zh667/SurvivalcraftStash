@@ -11,7 +11,8 @@ public class SubsystemStashWirelessBlockBehavior : SubsystemBlockBehavior
 {
     private SubsystemTerrain m_terrain = null!;
 
-    public override int[] HandledBlocks => new[] { StashWirelessTerminalBlock.Index };
+    public override int[] HandledBlocks =>
+        new[] { StashWirelessTerminalBlock.Index, StashWirelessCraftingTerminalBlock.Index };
 
     public override void Load(ValuesDictionary valuesDictionary)
     {
@@ -29,10 +30,13 @@ public class SubsystemStashWirelessBlockBehavior : SubsystemBlockBehavior
 
         int activeSlot = inventory.ActiveSlotIndex;
         int held = inventory.GetSlotValue(activeSlot);
-        if (Terrain.ExtractContents(held) != StashWirelessTerminalBlock.Index)
+        int heldBlock = Terrain.ExtractContents(held);
+        if (!StashWirelessBlockBase.IsWireless(heldBlock))
         {
             return false;
         }
+
+        bool withCrafting = StashWirelessBlockBase.HasCraftingGrid(heldBlock);
 
         TerrainRaycastResult? hit = componentMiner.Raycast<TerrainRaycastResult>(ray, RaycastMode.Interaction);
         StashWirelessUse.Result result = StashWirelessUse.Use(Project, m_terrain, componentMiner, hit, held);
@@ -44,11 +48,11 @@ public class SubsystemStashWirelessBlockBehavior : SubsystemBlockBehavior
         if (result.Bound)
         {
             inventory.RemoveSlotItems(activeSlot, 1);
-            inventory.AddSlotItems(activeSlot, StashWirelessTerminalBlock.Bind(held, result.HubId), 1);
+            inventory.AddSlotItems(activeSlot, StashWirelessBlockBase.Bind(held, result.HubId), 1);
         }
         else if (result.HubId > 0 && componentMiner.ComponentPlayer is { } player)
         {
-            StashWirelessUse.OpenRemote(player, Project, result.HubId);
+            StashWirelessUse.OpenRemote(player, Project, result.HubId, withCrafting);
         }
 
         return true;

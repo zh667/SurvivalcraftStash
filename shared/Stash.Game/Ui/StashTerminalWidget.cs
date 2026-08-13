@@ -39,6 +39,10 @@ public sealed class StashTerminalWidget : CanvasWidget
     /// <summary>玩家物品栏在容器界面里从第 10 格开始显示（0~9 是快捷栏，原版也是这么做的）。</summary>
     private const int PlayerFirstSlot = 10;
 
+    /// <summary>合成区的格子边长，以及整块合成区占的宽度（3 列 + 箭头 + 产物 + 边距）。</summary>
+    private const float CraftCellSize = 52f;
+    private const float CraftAreaWidth = 250f;
+
     private readonly ComponentPlayer m_player;
     private readonly List<IInventory> m_containers;
     private readonly TextBoxWidget m_searchBox;
@@ -50,6 +54,10 @@ public sealed class StashTerminalWidget : CanvasWidget
     private readonly ButtonWidget? m_sideToggleButton;
     private readonly List<InventorySlotWidget> m_cells = new();
     private readonly List<InventorySlotWidget> m_sideSlots = new();
+
+    /// <summary>无线合成终端才有的 3×3 合成格；普通终端是 null。</summary>
+    private readonly ComponentStashCraftingGrid? m_craftingGrid;
+    private readonly ButtonWidget? m_recipeButton;
     private readonly List<(IInventory Inventory, int Slot)> m_view = new();
 
     private double m_nextRefresh;
@@ -58,13 +66,19 @@ public sealed class StashTerminalWidget : CanvasWidget
     private string m_status = string.Empty;
     private bool m_showBackpack;
 
-    public StashTerminalWidget(ComponentPlayer player, List<IInventory> containers, string title)
+    /// <param name="craftingGrid">
+    /// 无线合成终端传玩家身上那块 3×3 合成格，普通终端传 null。
+    /// 传了就在右下角多出一块合成区，并且"填材料"能从**整个网络**取料。
+    /// </param>
+    public StashTerminalWidget(
+        ComponentPlayer player,
+        List<IInventory> containers,
+        string title,
+        ComponentStashCraftingGrid? craftingGrid = null)
     {
         m_player = player;
         m_containers = containers;
-
-        float gridWidth = Columns * CellSize;
-        float sideWidth = PlayerColumns * PlayerSlotSize;
+        m_craftingGrid = craftingGrid;
 
         // 右侧要能装下两种内容：玩家物品栏（去掉快捷栏那 10 格）和背包（最大档 32 格）。
         int sideSlots = MathUtils.Max(
@@ -72,55 +86,90 @@ public sealed class StashTerminalWidget : CanvasWidget
             StashBackpack.GetWornTier(player) != null ? StashBackpackTiers.MaxSlots : 0);
         int sideRows = MathUtils.Max(1, (sideSlots + PlayerColumns - 1) / PlayerColumns);
 
-        float width = Padding * 3f + gridWidth + sideWidth;
-        float height = Padding * 2f + HeaderHeight + MathUtils.Max(Rows * CellSize, sideRows * PlayerSlotSize) + 30f;
+        // ── 先按"设计尺寸"算一遍，再整体缩放到画布放得下为止 ──
+        //
+        // 设计尺寸是 816×438。而 UI 缩放拉到 1.2（手机常用）时画布只有 708×398，
+        // 左右会各被切掉 54 单位——**整整一列格子点不到**。
+        // 等比缩小总比裁掉强：格子小一点还能点，被切掉就是彻底没了。
+        // 详见 StashScreenMetrics 的类注释。
+        // 合成模式多出一块 3×3 网格 + 产物格。
+        float craftWidth = craftingGrid != null ? CraftAreaWidth : 0f;
+        float designWidth = Padding * 3f + Columns * CellSize + PlayerColumns * PlayerSlotSize + craftWidth;
+        float designHeight = Padding * 2f + HeaderHeight
+            + MathUtils.Max(Rows * CellSize, sideRows * PlayerSlotSize) + 30f;
+
+        float scale = StashScreenMetrics.FitScale(new Vector2(designWidth, designHeight));
+        if (scale < 1f)
+        {
+            Log.Information($"[Stash] 终端界面按 {scale:0.00} 缩放："
+                + $"设计 {designWidth:0}x{designHeight:0}，画布预算 {StashScreenMetrics.PanelBudget}");
+        }
+
+        float pad = Padding * scale;
+        float cell = CellSize * scale;
+        float sideCell = PlayerSlotSize * scale;
+        float header = HeaderHeight * scale;
+        float searchY = SearchY * scale;
+        float searchHeight = SearchHeight * scale;
+        float searchLabelWidth = SearchLabelWidth * scale;
+        float searchInset = SearchInset * scale;
+        float pageButton = 34f * scale;
+
+        float gridWidth = Columns * cell;
+        float sideWidth = PlayerColumns * sideCell;
+
+        float craftCell = CraftCellSize * scale;
+        float craftArea = craftingGrid != null ? CraftAreaWidth * scale : 0f;
+
+        float width = pad * 3f + gridWidth + sideWidth + craftArea;
+        float height = pad * 2f + header + MathUtils.Max(Rows * cell, sideRows * sideCell) + 30f * scale;
         Size = new Vector2(width, height);
 
         Children.Add(new BevelledRectangleWidget { Size = new Vector2(width, height), BevelSize = 3f });
 
-        AddLabel(title, new Vector2(Padding, 12f));
+        AddLabel(title, new Vector2(pad, 12f * scale));
 
         // 搜索框。原版 TextBoxWidget 是个"裸"控件——不画背景也不画边框，
         // 直接摆在面板上只能看见一根闪烁的光标（实机反馈"不容易看到"）。
         // 自己给它垫一个内凹的框，再配一行占位提示，才看得出这里能打字。
-        AddLabel(StashText.Search, new Vector2(Padding, SearchY + 8f));
+        AddLabel(StashText.Search, new Vector2(pad, searchY + 8f * scale));
 
-        float frameX = Padding + SearchLabelWidth;
-        float frameWidth = gridWidth - 76f - SearchLabelWidth;
+        float frameX = pad + searchLabelWidth;
+        float frameWidth = gridWidth - pageButton * 2f - 8f * scale - searchLabelWidth;
 
         m_searchFrame = new BevelledRectangleWidget
         {
-            Size = new Vector2(frameWidth, SearchHeight),
+            Size = new Vector2(frameWidth, searchHeight),
             BevelSize = -2f, // 负值 = 内凹，看起来像个输入槽
             RoundingRadius = 3f,
             CenterColor = new Color(0, 0, 0, 110),
             IsHitTestVisible = false,
         };
         Children.Add(m_searchFrame);
-        SetWidgetPosition(m_searchFrame, new Vector2(frameX, SearchY));
+        SetWidgetPosition(m_searchFrame, new Vector2(frameX, searchY));
 
         // 占位提示：文字为空时显示。LabelWidget 默认 IsHitTestVisible=false，不会挡住点击。
         m_searchHint = new LabelWidget
         {
             Text = StashText.SearchHint,
-            Size = new Vector2(frameWidth - SearchInset * 2f, SearchHeight),
+            Size = new Vector2(frameWidth - searchInset * 2f, searchHeight),
             TextAnchor = Engine.Graphics.TextAnchor.VerticalCenter,
             Color = new Color(255, 255, 255, 90),
         };
         Children.Add(m_searchHint);
-        SetWidgetPosition(m_searchHint, new Vector2(frameX + SearchInset, SearchY));
+        SetWidgetPosition(m_searchHint, new Vector2(frameX + searchInset, searchY));
 
-        m_searchBox = new TextBoxWidget { Size = new Vector2(frameWidth - SearchInset * 2f, SearchHeight) };
+        m_searchBox = new TextBoxWidget { Size = new Vector2(frameWidth - searchInset * 2f, searchHeight) };
         Children.Add(m_searchBox);
-        SetWidgetPosition(m_searchBox, new Vector2(frameX + SearchInset, SearchY));
+        SetWidgetPosition(m_searchBox, new Vector2(frameX + searchInset, searchY));
 
-        m_pageUpButton = new BevelledButtonWidget { Text = "▲", Size = new Vector2(34f, 34f) };
+        m_pageUpButton = new BevelledButtonWidget { Text = "▲", Size = new Vector2(pageButton, pageButton) };
         Children.Add(m_pageUpButton);
-        SetWidgetPosition(m_pageUpButton, new Vector2(Padding + gridWidth - 72f, SearchY));
+        SetWidgetPosition(m_pageUpButton, new Vector2(pad + gridWidth - pageButton * 2f - 4f * scale, searchY));
 
-        m_pageDownButton = new BevelledButtonWidget { Text = "▼", Size = new Vector2(34f, 34f) };
+        m_pageDownButton = new BevelledButtonWidget { Text = "▼", Size = new Vector2(pageButton, pageButton) };
         Children.Add(m_pageDownButton);
-        SetWidgetPosition(m_pageDownButton, new Vector2(Padding + gridWidth - 36f, SearchY));
+        SetWidgetPosition(m_pageDownButton, new Vector2(pad + gridWidth - pageButton, searchY));
 
         // 右侧在"物品栏 / 背包"之间切换：背包里的东西也要能方便地丢进网络。
         if (StashBackpack.GetWornTier(player) != null)
@@ -128,23 +177,101 @@ public sealed class StashTerminalWidget : CanvasWidget
             m_sideToggleButton = new BevelledButtonWidget
             {
                 Text = StashText.PlayerInventory,
-                Size = new Vector2(sideWidth, 30f),
+                Size = new Vector2(sideWidth, 30f * scale),
             };
             Children.Add(m_sideToggleButton);
-            SetWidgetPosition(m_sideToggleButton, new Vector2(Padding * 2f + gridWidth, 46f));
+            SetWidgetPosition(m_sideToggleButton, new Vector2(pad * 2f + gridWidth, 46f * scale));
         }
         else
         {
-            AddLabel(StashText.PlayerInventory, new Vector2(Padding * 2f + gridWidth, 52f));
+            AddLabel(StashText.PlayerInventory, new Vector2(pad * 2f + gridWidth, 52f * scale));
         }
 
-        BuildGrid(m_cells, Columns, Rows, CellSize, new Vector2(Padding, Padding + HeaderHeight));
-        BuildGrid(m_sideSlots, PlayerColumns, sideRows, PlayerSlotSize,
-            new Vector2(Padding * 2f + gridWidth, Padding + HeaderHeight));
+        BuildGrid(m_cells, Columns, Rows, cell, new Vector2(pad, pad + header));
+        BuildGrid(m_sideSlots, PlayerColumns, sideRows, sideCell,
+            new Vector2(pad * 2f + gridWidth, pad + header));
+
+        // ── 合成区（只有无线合成终端才有）──
+        if (craftingGrid != null)
+        {
+            // 左边两栏之后再空一个 pad。之前少减了一次，合成区直接贴着物品栏。
+            float craftX = pad * 3f + gridWidth + sideWidth;
+            float craftY = pad + header;
+
+            // 标题和左边两栏的标题**同一条基线**。
+            // 一度写成 craftY - 22，标签有三十来单位高，直接压在第一行格子上（实机反馈"合成两字和合成表重合"）。
+            AddLabel(StashText.CraftingGrid, new Vector2(craftX, 52f * scale));
+
+            var craftPanel = new GridPanelWidget { ColumnsCount = 3, RowsCount = 3 };
+            for (int i = 0; i < 9; i++)
+            {
+                var slot = new InventorySlotWidget { Size = new Vector2(craftCell, craftCell) };
+                slot.AssignInventorySlot(craftingGrid, i);
+                craftPanel.Children.Add(slot);
+                craftPanel.SetWidgetCell(slot, new Point2(i % 3, i / 3));
+            }
+
+            Children.Add(craftPanel);
+            SetWidgetPosition(craftPanel, new Vector2(craftX, craftY));
+
+            float sideX = craftX + craftCell * 3f + 20f * scale;
+
+            // 一支箭头指向产物格。没有它的话，右边那两个竖着的格子看不出是干嘛的
+            // （实机反馈"合成表右边有竖着的两个格子"）。原版工作台界面也是靠箭头交代关系的。
+            var arrow = new ArrowLineWidget
+            {
+                Color = new Color(0, 0, 0, 96),
+                Width = 6f * scale,
+                ArrowWidth = 16f * scale,
+                AbsoluteCoordinates = true,
+                // 坐标串必须用不变文化格式化：某些语言环境下小数点是逗号，
+                // 而 PointsString 本身就是用逗号分隔 x/y 的，会被解析成一团乱码。
+                PointsString = string.Format(
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    "{0}, {1}; {2}, {3}",
+                    craftX + craftCell * 3f + 2f * scale,
+                    craftY + craftCell * 1.5f,
+                    sideX - 4f * scale,
+                    craftY + craftCell * 1.5f),
+                IsHitTestVisible = false,
+            };
+            Children.Add(arrow);
+
+            // 产物格：和 3×3 竖直居中对齐，箭头正好指过来。
+            var result = new InventorySlotWidget { Size = new Vector2(craftCell, craftCell) };
+            result.AssignInventorySlot(craftingGrid, craftingGrid.ResultSlotIndex);
+            Children.Add(result);
+            SetWidgetPosition(result, new Vector2(sideX, craftY + craftCell));
+
+            // 残留格（比如水桶合面团会退回空桶）。**格子里写上"剩余"**——
+            // 原版工作台就是往 InventorySlotWidget 里塞一个居中的淡色标签，
+            // 不然玩家看不出这一格和产物格的区别。
+            var remains = new InventorySlotWidget { Size = new Vector2(craftCell, craftCell) };
+            remains.AssignInventorySlot(craftingGrid, craftingGrid.RemainsSlotIndex);
+            remains.Children.Add(new LabelWidget
+            {
+                Text = StashText.CraftRemains,
+                Color = new Color(0, 0, 0, 110),
+                FontScale = 0.7f,
+                HorizontalAlignment = WidgetAlignment.Center,
+                VerticalAlignment = WidgetAlignment.Center,
+                IsHitTestVisible = false,
+            });
+            Children.Add(remains);
+            SetWidgetPosition(remains, new Vector2(sideX, craftY + craftCell * 2f + 8f * scale));
+
+            m_recipeButton = new BevelledButtonWidget
+            {
+                Text = StashText.RecipeBrowser,
+                Size = new Vector2(craftCell * 2f, 30f * scale),
+            };
+            Children.Add(m_recipeButton);
+            SetWidgetPosition(m_recipeButton, new Vector2(craftX, craftY + craftCell * 3f + 14f * scale));
+        }
 
         m_statusLabel = new LabelWidget { Color = new Color(255, 255, 255, 160) };
         Children.Add(m_statusLabel);
-        SetWidgetPosition(m_statusLabel, new Vector2(Padding, height - 26f));
+        SetWidgetPosition(m_statusLabel, new Vector2(pad, height - 26f * scale));
 
         BindSide();
         Refresh();
@@ -237,6 +364,32 @@ public sealed class StashTerminalWidget : CanvasWidget
         {
             m_page++;
             Refresh();
+        }
+
+        if (m_recipeButton is { IsClicked: true } && m_craftingGrid != null
+            && m_player.ComponentGui is { } gui)
+        {
+            var target = new StashCraftTarget(
+                m_craftingGrid, ComponentStashCraftingGrid.GridSize, ComponentStashCraftingGrid.GridSize,
+                IsFurnace: false);
+
+            // **取料顺序有讲究**：物品栏排头，因为它同时兼作"腾空合成格时东西退回哪里"。
+            // 然后是行囊，最后才是整个存储网络——先用身上的，别动箱子。
+            var sources = new List<IInventory>();
+            if (m_player.ComponentMiner?.Inventory is { } inventory)
+            {
+                sources.Add(inventory);
+            }
+
+            if (StashBackpack.GetInventory(m_player) is { } backpack)
+            {
+                sources.Add(backpack);
+            }
+
+            sources.AddRange(m_containers);
+
+            StashOverlayHost.Toggle(gui, () => new StashRecipeBrowser(gui, target, sources));
+            AudioManager.PlaySound("Audio/UI/ButtonClick", 1f, 0f, 0f);
         }
 
         if (m_sideToggleButton is { IsClicked: true })
