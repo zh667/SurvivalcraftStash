@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  行囊做成衣物：不占方块索引（所有衣物共用 ClothingBlock 203），贴图走衣物自己的独立贴图。
+  贴图由 tools/gen_backpacks.py 生成，UV 区块从本体 Assets/Models/OuterClothingMale.dae 量出。
+
+  ─────────────────────────────────────────────────────────────────────────────
+  **这个文件两个平台各一份，因为衣物索引是全局写死的、没有分配机制。**
+
+  实机反馈：和「工业时代2」(SCIE) 同时装时，我们的三档行囊和它的钢头盔/钢胸甲/钢护腿
+  长在同一个索引上，结果物品显示我们的名字、套着它的模型，配方表里两条配方混在一起。
+  SCIE 占的是 38~42 和 50。
+
+  两边能选的范围不一样：
+  - **联机版**：`m_clothingData` 是 `DynamicArray<ClothingData>`，而
+    `GetCreativeValues()` 里 `m_clothingData.OrderBy(cd => cd.DisplayIndex)`
+    **在判空之前就解引用**——中间留一个空号，进世界直接 NRE。
+    所以必须紧接原版最后一个（37）连续往下排，只能是 38/39/40。
+  - **插件版**：`m_clothingData` 是 `Dictionary<int, ClothingData>`，留空号无所谓
+    （SCIE 自己就是 42 之后跳到 50）。所以搬到高位躲开混战区。
+
+  详见 docs/SC-PLATFORM.md 5.28。
+  ─────────────────────────────────────────────────────────────────────────────
+
+  联机版这三行的名字和描述是**写死的中文**：本平台无法用自定义语言键，
+  而 ClothingBlock:38 这种键一旦写进共享语言文件，插件版会跟着装上、又把 SCIE 的名字顶掉。
+-->
+<Mod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ClothingData Class="Game.ClothingData" Index="38" DisplayName="铜行囊" Description="穿在身上的行囊，16 格。拖到人物身上就背上，拖出来就取下。按 B 键打开；拿在手里右键可以直接背上并打开。"
+                Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.2" MovementSpeedFactor="1"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="False" Layer="5"
+                PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackCopper" ImpactSoundsFolder=""/>
+  <ClothingData Class="Game.ClothingData" Index="39" DisplayName="铁行囊" Description="穿在身上的行囊，24 格。用铜行囊加一圈铁锭合成。"
+                Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.3" MovementSpeedFactor="1"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="False" Layer="5"
+                PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackIron" ImpactSoundsFolder=""/>
+  <ClothingData Class="Game.ClothingData" Index="40" DisplayName="钻石行囊" Description="穿在身上的行囊，32 格。用铁行囊加一圈钻石合成。"
+                Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.2" MovementSpeedFactor="1"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="False" Layer="5"
+                PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackDiamond" ImpactSoundsFolder=""/>
+</Mod>

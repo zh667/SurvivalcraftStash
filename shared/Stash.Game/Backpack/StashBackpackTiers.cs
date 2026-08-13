@@ -7,11 +7,28 @@ namespace Stash.Game;
 /// 背包是**衣物**（原版 ClothingBlock，索引 203），不占方块索引，
 /// 贴图也走衣物那套独立贴图，不受方块图集限制——联机版同样有得看。
 ///
-/// **衣物索引必须紧接原版最后一个（37）往下排，中间不能留空洞。**
-/// 联机版 <c>ClothingBlock.m_clothingData</c> 是"按索引下标"的数组，
-/// <c>GetCreativeValues()</c> 里 <c>OrderBy(cd =&gt; cd.DisplayIndex)</c> 在排序阶段就会读到空洞里的 null
-/// （它只在循环体里判了空，排序时没判）→ 进世界时 ComponentCreativeInventory 直接 NRE。
+/// ─────────────────────────────────────────────────────────────────────────
+/// **衣物索引是全局写死的，没有分配机制，两个平台能选的范围还不一样。**
+///
+/// 实机反馈：和「工业时代2」(SCIE) 同装时，三档行囊和它的钢头盔/钢胸甲/钢护腿
+/// 撞在同一个索引上——物品显示我们的名字、套着它的模型，配方表里两条配方混在一起。
+/// SCIE 占 38~42 和 50。
+///
+/// **联机版只能是 38/39/40。** <c>m_clothingData</c> 是"按索引下标"的
+/// <c>DynamicArray</c>，而 <c>GetCreativeValues()</c> 里
+/// <c>OrderBy(cd =&gt; cd.DisplayIndex)</c> **在判空之前就解引用**
+/// （空判只写在循环体里）→ 中间留一个空号，进世界直接 NRE。
 /// 一开始取的是 100~102，结果 38~99 全是 null，任何世界都进不去。
+/// 所以这个平台没法躲，只能紧接原版最后一个（37）连续排。
+///
+/// **插件版搬到 160/161/162。** 那边 <c>m_clothingData</c> 是
+/// <c>Dictionary&lt;int, ClothingData&gt;</c>，留空号无所谓——SCIE 自己就是 42 之后跳到 50。
+/// 高位远离"大家都紧挨着原版往下排"的混战区。
+///
+/// 索引只有 8 位（<c>GetClothingIndex(data) = data &amp; 0xFF</c>），上限 255。
+/// 改这里必须同步改对应平台的 <c>Assets/StashClothes.clo</c> 和 <c>Assets/StashBackpacks.cr</c>。
+/// 详见 docs/SC-PLATFORM.md 5.28。
+/// ─────────────────────────────────────────────────────────────────────────
 /// </summary>
 public sealed record StashBackpackTier(int ClothingIndex, string Key, int SlotsCount, int Columns);
 
@@ -23,11 +40,24 @@ public static class StashBackpackTiers
     /// <summary>组件里实际开的槽位数，取最大档位，换档只改可见格数。</summary>
     public const int MaxSlots = 32;
 
-    public static readonly StashBackpackTier Copper = new(38, "copper", SlotsCount: 16, Columns: 8);
+    /// <summary>
+    /// 三档行囊的起始衣物索引。两个平台不一样，理由见类注释。
+    /// **改这里必须同步改该平台 Assets 下的 StashClothes.clo 和 StashBackpacks.cr。**
+    /// </summary>
+#if STASH_SCMOD
+    public const int FirstClothingIndex = 160;
+#else
+    public const int FirstClothingIndex = 38;
+#endif
 
-    public static readonly StashBackpackTier Iron = new(39, "iron", SlotsCount: 24, Columns: 8);
+    public static readonly StashBackpackTier Copper =
+        new(FirstClothingIndex, "copper", SlotsCount: 16, Columns: 8);
 
-    public static readonly StashBackpackTier Diamond = new(40, "diamond", SlotsCount: 32, Columns: 8);
+    public static readonly StashBackpackTier Iron =
+        new(FirstClothingIndex + 1, "iron", SlotsCount: 24, Columns: 8);
+
+    public static readonly StashBackpackTier Diamond =
+        new(FirstClothingIndex + 2, "diamond", SlotsCount: 32, Columns: 8);
 
     public static readonly IReadOnlyList<StashBackpackTier> All = new[] { Copper, Iron, Diamond };
 

@@ -35,17 +35,17 @@
       "Description": "贴着它的箱子、抽屉连成一片网络，点它就能统一搜索、取出、一键存入。最多接管 128 个容器。",
       "CRDescription:0": "存储终端"
     },
-    "ClothingBlock:38": {
+    "StashBackpack:0": {
       "DisplayName": "铜行囊",
       "Description": "穿在身上的行囊，16 格。拖到人物身上就背上，拖出来就取下。按 B 键打开；拿在手里右键可以直接背上并打开。",
       "CRDescription:0": "铜行囊"
     },
-    "ClothingBlock:39": {
+    "StashBackpack:1": {
       "DisplayName": "铁行囊",
       "Description": "穿在身上的行囊，24 格。用铜行囊加一圈铁锭合成。",
       "CRDescription:0": "铁行囊"
     },
-    "ClothingBlock:40": {
+    "StashBackpack:2": {
       "DisplayName": "钻石行囊",
       "Description": "穿在身上的行囊，32 格。用铁行囊加一圈钻石合成。",
       "CRDescription:0": "钻石行囊"

@@ -35,17 +35,17 @@
       "Description": "Chests and drawers touching it form one network; tap to search, take and deposit across all of them. Up to 128 containers.",
       "CRDescription:0": "Storage Terminal"
     },
-    "ClothingBlock:38": {
+    "StashBackpack:0": {
       "DisplayName": "Copper Backpack",
       "Description": "A worn backpack with 16 slots. Press B or use the Backpack button in your inventory.",
       "CRDescription:0": "Copper Backpack"
     },
-    "ClothingBlock:39": {
+    "StashBackpack:1": {
       "DisplayName": "Iron Backpack",
       "Description": "A worn backpack with 24 slots.",
       "CRDescription:0": "Iron Backpack"
     },
-    "ClothingBlock:40": {
+    "StashBackpack:2": {
       "DisplayName": "Diamond Backpack",
       "Description": "A worn backpack with 32 slots.",
       "CRDescription:0": "Diamond Backpack"

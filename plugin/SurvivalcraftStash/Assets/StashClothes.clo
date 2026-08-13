@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  行囊做成衣物：不占方块索引（所有衣物共用 ClothingBlock 203），贴图走衣物自己的独立贴图。
+  贴图由 tools/gen_backpacks.py 生成，UV 区块从本体 Assets/Models/OuterClothingMale.dae 量出。
+
+  ─────────────────────────────────────────────────────────────────────────────
+  **这个文件两个平台各一份，因为衣物索引是全局写死的、没有分配机制。**
+
+  实机反馈：和「工业时代2」(SCIE) 同时装时，我们的三档行囊和它的钢头盔/钢胸甲/钢护腿
+  长在同一个索引上，结果物品显示我们的名字、套着它的模型，配方表里两条配方混在一起。
+  SCIE 占的是 38~42 和 50。
+
+  两边能选的范围不一样：
+  - **联机版**：`m_clothingData` 是 `DynamicArray<ClothingData>`，而
+    `GetCreativeValues()` 里 `m_clothingData.OrderBy(cd => cd.DisplayIndex)`
+    **在判空之前就解引用**——中间留一个空号，进世界直接 NRE。
+    所以必须紧接原版最后一个（37）连续往下排，只能是 38/39/40。
+  - **插件版**：`m_clothingData` 是 `Dictionary<int, ClothingData>`，留空号无所谓
+    （SCIE 自己就是 42 之后跳到 50）。所以搬到高位躲开混战区。
+
+  详见 docs/SC-PLATFORM.md 5.28。
+  ─────────────────────────────────────────────────────────────────────────────
+
+  插件版用**自己的语言键** StashBackpack:0/1/2——本平台会拿中括号里的内容当键去查，
+  所以不用再碰 ClothingBlock:N，SCIE 的钢甲名字不受影响，中英文也都保住了。
+-->
+<Mod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ClothingData Class="Game.ClothingData" Index="160" DisplayName="[StashBackpack:0]" Description="[StashBackpack:0]"
+                Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.2" MovementSpeedFactor="1"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="False" Layer="5"
+                PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackCopper" ImpactSoundsFolder=""/>
+  <ClothingData Class="Game.ClothingData" Index="161" DisplayName="[StashBackpack:1]" Description="[StashBackpack:1]"
+                Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.3" MovementSpeedFactor="1"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="False" Layer="5"
+                PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackIron" ImpactSoundsFolder=""/>
+  <ClothingData Class="Game.ClothingData" Index="162" DisplayName="[StashBackpack:2]" Description="[StashBackpack:2]"
+                Slot="Torso" ArmorProtection="0" Sturdiness="1000000" Insulation="0.2" MovementSpeedFactor="1"
+                SteedMovementSpeedFactor="1" DensityModifier="0.0" IsOuter="True" CanBeDyed="False" Layer="5"
+                PlayerLevelRequired="1" TextureName="Textures/Stash/BackpackDiamond" ImpactSoundsFolder=""/>
+</Mod>

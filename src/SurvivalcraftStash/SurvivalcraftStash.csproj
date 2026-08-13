@@ -3,7 +3,7 @@
     <AssemblyName>SurvivalcraftStash</AssemblyName>
     <RootNamespace>Game</RootNamespace>
     <OutputType>Library</OutputType>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <!-- 联机版目标平台 -->
     <DefineConstants>$(DefineConstants);STASH_NETMOD</DefineConstants>

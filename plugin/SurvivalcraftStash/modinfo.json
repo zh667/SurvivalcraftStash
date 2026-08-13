@@ -1,7 +1,7 @@
 {
   "$schema": "https://gitee.com/SC-SPM/SurvivalcraftApi/raw/SCAPI1.9/Survivalcraft/Content/modinfo-scheme.json",
   "Name": "存储机制改革",
-  "Version": "0.1.0",
+  "Version": "0.1.1",
   "ApiVersion": "1.9.2.1",
   "Description": "行囊 · 分级箱子 · 分级熔炉 · 存储网络 · 配方浏览",
   "ScVersion": "2.4.0.0",

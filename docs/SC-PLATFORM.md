@@ -737,3 +737,66 @@ UpdateCraftingResult();   // 末尾无条件重算，状态自己就纠正回来
 顺带：原版**不在 `Load` 里重算**，所以载入后玩家会看到一个点不动的产物，
 要等下一次格子变动才纠正。我们在 `Load` 末尾补了一次 `UpdateResult()`（try/catch 兜底），
 省掉那一次"点了没反应"。
+
+## 5.28 衣物索引是全局写死的，而两个平台能选的范围不一样
+
+`ClothingData` 的 `Index` 是**绝对索引**，没有任何分配机制——两个 Mod 写同一个数字，
+后加载的那个直接把前一个顶掉：
+
+```csharp
+m_clothingData[result] = value;   // 联机版和插件版都是这一句，没有冲突检测
+```
+
+实机踩到的：「工业时代2」(SCIE) 的钢头盔/钢胸甲/钢护腿占 38/39/40，
+和我们的三档行囊完全重合。表现是**物品显示我们的名字、套着它的模型**，
+配方表里两条配方混在一起（「铜行囊(配方 #2)」下面写着「用钢制造头盔」）。
+SCIE 占用 38~42 和 50。
+
+**索引只有 8 位**：`GetClothingIndex(data) => data & 0xFF`，可用 0~255，原版用到 37。
+
+### 两个平台的差别
+
+| | 联机版 | 插件版 |
+|---|---|---|
+| 存储 | `DynamicArray<ClothingData>`（按下标） | `Dictionary<int, ClothingData>` |
+| 能不能留空号 | **不能** | 能 |
+
+联机版不能留空号的原因在 `GetCreativeValues()`：
+
+```csharp
+IEnumerable<ClothingData> e = m_clothingData.OrderBy(cd => cd.DisplayIndex);  // ← 这里就 NRE 了
+foreach (ClothingData cd in e) { if (cd != null) { … } }                      // ← 空判写在这，太晚
+```
+
+排序阶段就要读 `cd.DisplayIndex`，中间任何一个 null 都会炸，
+表现是**任何世界都进不去**（本项目第一版取 100~102，38~99 全空，直接进不去）。
+
+所以：**联机版只能紧接 37 连续排（38/39/40），躲不开；插件版可以搬到高位**
+（SCIE 自己就是 42 之后跳到 50，证明留空号没问题）。本项目插件版搬到 160/161/162。
+
+### 名字也会撞，而且两个平台的解析方式不同
+
+`DisplayName="[XXX]"` 里的中括号是"去语言文件查这个键"，但：
+
+- **插件版**用**中括号里的内容**当键：
+  `LanguageControl.TryGetBlock(text2.Substring(1, len - 2), "DisplayName", …)`
+  → 可以用自己的命名空间，例如 `[StashBackpack:0]`。
+- **联机版无视中括号里写了什么**，一律查 `ClothingBlock:{索引}`：
+  `LanguageControl.TryGetBlock($"{GetType().Name}:{result}", …)`（`GetDisplayName` 里也是）
+  → 没法用自定义键。
+
+后果：只要语言文件里有 `ClothingBlock:38` 这个词条，**SCIE 的钢头盔就会被改名**，
+哪怕我们的衣物已经搬走了。所以：
+
+- 共享语言文件里**一个 `ClothingBlock:N` 键都不能留**，改用自己的 `StashBackpack:N`。
+- 插件版 `.clo` 写 `[StashBackpack:0]`，中英文都保得住。
+- 联机版 `.clo` 只能**把中文名字和描述直接写死**在属性里（该平台没有自定义键这条路，
+  而共享语言文件又不能放 `ClothingBlock:N`）。代价是联机版这三个名字没有英文。
+
+### 拆文件是可行的
+
+`.clo` 和 `.cr` 两版都是**按扩展名扫目录**（`GetFiles(".clo", …)` / `GetFiles(".cr", …)`），
+一个 Mod 里放几个都会被加载。所以平台专属的资源直接放在各自工程的 `Assets/` 下即可
+（SDK 工程会自动 glob 进去）。
+
+**语言文件不行**：路径是写死的 `Lang/en-US.json` 和 `Lang/{当前语言}.json`，一个包只能有一份。

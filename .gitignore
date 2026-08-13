@@ -17,3 +17,6 @@ Snipaste_*.png
 # Python 缓存
 __pycache__/
 *.pyc
+*.jpg
+*.scmod
+*.netmod
