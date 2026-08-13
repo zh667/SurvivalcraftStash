@@ -1,7 +1,11 @@
-# Stash — Survivalcraft 收纳与物流套件
+# 存储机制改革
 
-把**行囊、分级箱子、一键整理、存储网络、分级熔炉、配方浏览器**做成一套连贯的东西，
-而不是几个互不相干的功能堆在一起。
+**行囊 · 分级箱子 · 分级熔炉 · 存储网络 · 配方浏览**
+
+Survivalcraft 的收纳与物流套件（英文名 / 包名 `Stash`）。
+把这几样做成一套连贯的东西，而不是几个互不相干的功能堆在一起——
+原版的箱子和熔炉基本被分级版接管，整理、检索、合成取料整条流程都重做了一遍，
+所以叫「改革」不算吹。
 
 设计参考了 Minecraft 的 Sophisticated Backpacks / Core、Tom's Simple Storage、Iron Chests、
 Inventory Profiles Next、JEI（均已反编译研读，见 [docs/MC-REFERENCE.md](docs/MC-REFERENCE.md)），
